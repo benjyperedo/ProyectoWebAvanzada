@@ -1,33 +1,226 @@
+
 .planificacion-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 24px;
 }
 
 .header-section {
   margin-bottom: 20px;
+
+  h1 {
+    margin-bottom: 6px;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+  }
 }
 
-.header-section h1 {
-  margin-bottom: 6px;
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.header-section p {
-  margin: 0;
+.procedencia {
+  margin-bottom: 16px;
   color: var(--ion-color-medium);
 }
 
-ion-card {
-  margin-left: 0;
-  margin-right: 0;
+.filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+
+  ion-searchbar {
+    padding: 0;
+  }
 }
 
-ion-badge {
-  margin-top: 8px;
-  font-size: 0.9rem;
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 16px 0;
+  font-size: 0.85rem;
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.indicacion {
+  margin: 16px 0 10px;
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+/* Contenedor horizontal de la malla */
+.malla-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 0 18px;
+}
+
+.malla-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: max-content;
+}
+
+/* Cada semestre es una columna */
+.semestre-columna {
+  width: 235px;
+  flex: 0 0 235px;
+}
+
+.semestre-header {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  span {
+    font-size: 0.8rem;
+    opacity: 0.9;
+  }
+}
+
+/* Tarjetas de asignaturas */
+.ramo-card {
+  margin: 0 0 12px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+
+  ion-card-header {
+    padding: 14px 12px 6px;
+  }
+
+  ion-card-title {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    font-weight: 650;
+  }
+
+  ion-card-content {
+    padding: 8px 12px 14px;
+  }
+}
+
+.ramo-estado {
+  margin-bottom: 10px;
+}
+
+.ramo-codigo {
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+  color: var(--ion-color-medium);
+}
+
+/* Colores según el resultado */
+.ramo-aprobado {
+  border-color: var(--ion-color-success);
+  --background: rgba(45, 180, 100, 0.08);
+}
+
+.ramo-reprobado {
+  border-color: var(--ion-color-danger);
+  --background: rgba(220, 60, 60, 0.07);
+}
+
+.ramo-bloqueado {
+  border-color: var(--ion-color-medium);
+  opacity: 0.75;
+}
+
+/* Prerrequisitos pendientes */
+.prerrequisitos {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+  color: var(--ion-color-light-contrast);
+  font-size: 0.75rem;
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+
+  li {
+    margin-bottom: 3px;
+    text-transform: capitalize;
+  }
+}
+
+/* Botones de cada asignatura */
+.acciones-ramo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.boton-resultado,
+.boton-limpiar {
+  min-height: 36px;
+  padding: 8px 4px;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton-aprobar {
+  border: 1px solid var(--ion-color-success);
+  background: transparent;
+  color: var(--ion-color-success);
+}
+
+.boton-reprobar {
+  border: 1px solid var(--ion-color-danger);
+  background: transparent;
+  color: var(--ion-color-danger);
+}
+
+.boton-aprobar.seleccionado {
+  background: var(--ion-color-success);
+  color: var(--ion-color-success-contrast);
+}
+
+.boton-reprobar.seleccionado {
+  background: var(--ion-color-danger);
+  color: var(--ion-color-danger-contrast);
+}
+
+.boton-limpiar {
+  grid-column: 1 / -1;
+  border: 1px solid var(--ion-color-medium);
+  background: transparent;
+  color: var(--ion-text-color);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
@@ -37,5 +230,14 @@ ion-badge {
 
   .header-section h1 {
     font-size: 1.7rem;
+  }
+
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .semestre-columna {
+    width: 215px;
+    flex-basis: 215px;
   }
 }

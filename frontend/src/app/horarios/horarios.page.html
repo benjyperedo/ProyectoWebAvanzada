@@ -1,3 +1,4 @@
+
 <ion-header>
   <ion-toolbar>
     <ion-title>Generador de horarios</ion-title>
@@ -11,61 +12,226 @@
     <section class="header-section">
       <h1>Configura tus preferencias</h1>
       <p>
-        LISTOCO utilizará tus preferencias académicas para proponer horarios que se ajusten mejor a tus necesidades.
+        LISTOCO utilizará tus preferencias académicas
+        para proponer horarios que se ajusten mejor
+        a tus necesidades.
       </p>
     </section>
 
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Preferencias</ion-card-title>
+        <ion-card-title>
+          Preferencias del estudiante
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
 
+        <!-- Jornada preferida -->
         <ion-item>
-          <ion-select label="Jornada preferida" labelPlacement="stacked">
-            <ion-select-option value="manana">Mañana</ion-select-option>
-            <ion-select-option value="tarde">Tarde</ion-select-option>
-            <ion-select-option value="indiferente">Indiferente</ion-select-option>
+          <ion-select
+            label="Jornada preferida"
+            labelPlacement="stacked"
+            [value]="preferencias().preferredShift"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias()"
+            (ionChange)="cambiarJornada($event.detail.value)">
+
+            <ion-select-option value="MORNING">
+              Mañana
+            </ion-select-option>
+
+            <ion-select-option value="AFTERNOON">
+              Tarde
+            </ion-select-option>
+
+            <ion-select-option value="ANY">
+              Indiferente
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
+        <!-- Día libre preferido -->
         <ion-item>
-          <ion-select label="Día libre preferido" labelPlacement="stacked">
-            <ion-select-option value="lunes">Lunes</ion-select-option>
-            <ion-select-option value="martes">Martes</ion-select-option>
-            <ion-select-option value="miercoles">Miércoles</ion-select-option>
-            <ion-select-option value="jueves">Jueves</ion-select-option>
-            <ion-select-option value="viernes">Viernes</ion-select-option>
+          <ion-select
+            label="Día libre preferido"
+            labelPlacement="stacked"
+            [value]="preferencias().preferredFreeDay"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias()"
+            (ionChange)="cambiarDiaLibre($event.detail.value)">
+
+            <ion-select-option [value]="null">
+              Sin preferencia
+            </ion-select-option>
+
+            <ion-select-option value="MONDAY">
+              Lunes
+            </ion-select-option>
+
+            <ion-select-option value="TUESDAY">
+              Martes
+            </ion-select-option>
+
+            <ion-select-option value="WEDNESDAY">
+              Miércoles
+            </ion-select-option>
+
+            <ion-select-option value="THURSDAY">
+              Jueves
+            </ion-select-option>
+
+            <ion-select-option value="FRIDAY">
+              Viernes
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
+        <!-- Hora máxima de término -->
         <ion-item>
-          <ion-select label="Hora máxima de término" labelPlacement="stacked">
-            <ion-select-option value="1600">16:00</ion-select-option>
-            <ion-select-option value="1800">18:00</ion-select-option>
-            <ion-select-option value="2000">20:00</ion-select-option>
+          <ion-select
+            label="Hora máxima de término"
+            labelPlacement="stacked"
+            [value]="preferencias().latestEndTime"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias()"
+            (ionChange)="cambiarHoraTermino($event.detail.value)">
+
+            <ion-select-option value="16:00">
+              16:00
+            </ion-select-option>
+
+            <ion-select-option value="18:00">
+              18:00
+            </ion-select-option>
+
+            <ion-select-option value="20:00">
+              20:00
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
-        <ion-button expand="block" class="generate-button">
-          Generar horario
+        <!-- Cantidad máxima de asignaturas -->
+        <ion-item>
+          <ion-select
+            label="Cantidad máxima de asignaturas"
+            labelPlacement="stacked"
+            [value]="preferencias().maxCourses"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias()"
+            (ionChange)="cambiarMaxCursos($event.detail.value)">
+
+            <ion-select-option [value]="1">1 ramo</ion-select-option>
+            <ion-select-option [value]="2">2 ramos</ion-select-option>
+            <ion-select-option [value]="3">3 ramos</ion-select-option>
+            <ion-select-option [value]="4">4 ramos</ion-select-option>
+            <ion-select-option [value]="5">5 ramos</ion-select-option>
+            <ion-select-option [value]="6">6 ramos</ion-select-option>
+            <ion-select-option [value]="7">7 ramos</ion-select-option>
+            <ion-select-option [value]="8">8 ramos</ion-select-option>
+
+          </ion-select>
+        </ion-item>
+
+        <!-- Guardar las preferencias del estudiante -->
+        <ion-button
+          expand="block"
+          [disabled]="cargandoPreferencias() || guardandoPreferencias()"
+          (click)="guardarPreferencias()">
+
+          @if (guardandoPreferencias()) {
+            Guardando preferencias...
+          } @else {
+            Guardar preferencias
+          }
+
+        </ion-button>
+
+        <!-- Mensaje mientras se cargan las preferencias -->
+        @if (cargandoPreferencias()) {
+          <p role="status">
+            Cargando tus preferencias guardadas...
+          </p>
+        }
+
+        <!-- Mensaje de guardado exitoso -->
+        @if (mensajePreferencias()) {
+          <p
+            role="status"
+            style="color: var(--ion-color-success)">
+            {{ mensajePreferencias() }}
+          </p>
+        }
+
+        <!-- Mensaje de error -->
+        @if (errorPreferencias()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorPreferencias() }}
+          </p>
+        }
+
+        <!-- Generador inteligente pendiente de implementación -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          class="generate-button"
+          [disabled]="true">
+          Generar horario (próximamente)
         </ion-button>
 
       </ion-card-content>
     </ion-card>
 
+    <!-- Resumen de las preferencias -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Horario recomendado</ion-card-title>
+        <ion-card-title>
+          Preferencias seleccionadas
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
-        <p><strong>Lunes:</strong> Base de Datos - 09:30</p>
-        <p><strong>Martes:</strong> Ingeniería Web Avanzada - 11:00</p>
-        <p><strong>Miércoles:</strong> Base de Datos - 09:30</p>
-        <p><strong>Jueves:</strong> Ingeniería Web Avanzada - 11:00</p>
-        <p><strong>Viernes:</strong> Día libre</p>
+
+        <p>
+          <strong>Jornada:</strong>
+          @if (preferencias().preferredShift === 'MORNING') {
+            Mañana
+          } @else if (preferencias().preferredShift === 'AFTERNOON') {
+            Tarde
+          } @else {
+            Indiferente
+          }
+        </p>
+
+        <p>
+          <strong>Día libre:</strong>
+          @switch (preferencias().preferredFreeDay) {
+            @case ('MONDAY') { Lunes }
+            @case ('TUESDAY') { Martes }
+            @case ('WEDNESDAY') { Miércoles }
+            @case ('THURSDAY') { Jueves }
+            @case ('FRIDAY') { Viernes }
+            @default { Sin preferencia }
+          }
+        </p>
+
+        <p>
+          <strong>Hora máxima:</strong>
+          {{ preferencias().latestEndTime }}
+        </p>
+
+        <p>
+          <strong>Máximo de asignaturas:</strong>
+          {{ preferencias().maxCourses }}
+        </p>
+
+        <p>
+          Configura tus preferencias y presiona
+          "Guardar preferencias" para conservarlas
+          en tu cuenta.
+        </p>
+
       </ion-card-content>
     </ion-card>
 

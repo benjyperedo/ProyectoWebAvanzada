@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,6 +13,11 @@ enum Role {
   ADMIN
 }
 
+enum CourseResult {
+  APPROVED
+  FAILED
+}
+
 enum IngestionStatus {
   SUCCESS
   DEGRADED
@@ -19,16 +25,20 @@ enum IngestionStatus {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  passwordHash  String
-  role          Role           @default(STUDENT)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  ingestionRuns IngestionRun[]
+  id                 Int                    @id @default(autoincrement())
+  email              String                 @unique
+  passwordHash       String
+  role               Role                   @default(STUDENT)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  ingestionRuns      IngestionRun[]
+  academicProgress   StudentCourseProgress[]
+  schedulePreference SchedulePreference?
 }
 
-// Fuente web externa de la que se obtienen datos (por ejemplo, el PDF de la PUCV).
+// Fuente web externa de la que se obtienen datos
+// (por ejemplo, el PDF de la PUCV).
 model DataSource {
   id        Int            @id @default(autoincrement())
   key       String         @unique
@@ -39,8 +49,9 @@ model DataSource {
   courses   Course[]
 }
 
-// Una ejecución de la ingesta: procedencia del documento, métricas de calidad
-// y resultado de la persistencia. Permite auditar y comparar corridas.
+// Una ejecución de la ingesta: procedencia del documento,
+// métricas de calidad y resultado de la persistencia.
+// Permite auditar y comparar corridas.
 model IngestionRun {
   id            Int             @id @default(autoincrement())
   sourceId      Int
@@ -90,12 +101,16 @@ model Course {
   id                Int           @id @default(autoincrement())
   code              String        @unique
   name              String
-  // La fuente web no publica créditos: se completan después con la fuente curada.
+
+  // La fuente web no publica créditos:
+  // se completan después con la fuente curada.
   credits           Int?
   suggestedSemester Int
   category          String?
   active            Boolean       @default(true)
-  // Procedencia: de qué fuente y de qué corrida viene el dato, y cuándo se vio por última vez.
+
+  // Procedencia: de qué fuente y de qué corrida
+  // viene el dato, y cuándo se vio por última vez.
   sourceId          Int?
   source            DataSource?   @relation(fields: [sourceId], references: [id])
   lastRunId         Int?
@@ -104,7 +119,48 @@ model Course {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
+  academicProgress StudentCourseProgress[]
+
   @@index([suggestedSemester])
   @@index([category])
   @@index([sourceId, active])
+}
+
+model StudentCourseProgress {
+  userId    Int
+  courseId  Int
+  result    CourseResult
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@id([userId, courseId])
+  @@index([courseId])
+}
+
+enum PreferredShift {
+  MORNING
+  AFTERNOON
+  ANY
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+model SchedulePreference {
+  userId           Int            @id
+  preferredShift   PreferredShift @default(ANY)
+  preferredFreeDay Weekday?
+  latestEndTime    String         @default("18:00")
+  maxCourses       Int            @default(5)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

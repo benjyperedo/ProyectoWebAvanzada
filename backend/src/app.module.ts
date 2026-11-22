@@ -9,6 +9,8 @@ import { HealthModule } from './health/health.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { PythonModule } from './python/python.module.js';
 import { IngestionModule } from './ingestion/ingestion.module.js';
+import { AcademicProgressModule } from './academic-progress/academic-progress.module.js';
+import { SchedulePreferencesModule } from './schedule-preferences/schedule-preferences.module.js';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { IngestionModule } from './ingestion/ingestion.module.js';
     AuthModule,
     PythonModule,
     IngestionModule,
+    AcademicProgressModule,
+    SchedulePreferencesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,46 +5,88 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="planificacion-container">
 
     <section class="header-section">
-      <h1>Malla curricular</h1>
+      <h1>Mi malla curricular</h1>
       <p>
-        Asignaturas de la carrera obtenidas desde la fuente oficial de la PUCV.
+        Revisa las asignaturas de Ingeniería Civil Informática
+        y registra tu progreso académico.
       </p>
     </section>
 
+    <!-- Procedencia de la información -->
     @if (procedencia(); as p) {
       <p class="procedencia">
         <small>
-          Fuente: <a [href]="p.fuente.url" target="_blank" rel="noopener noreferrer">{{ p.fuente.name }}</a>
+          Fuente:
+          <a
+            [href]="p.fuente.url"
+            target="_blank"
+            rel="noopener noreferrer">
+            {{ p.fuente.name }}
+          </a>
           @if (p.actualizado) {
-            · Actualizado: {{ p.actualizado | date: 'dd-MM-yyyy HH:mm' }}
+            · Actualizado:
+            {{ p.actualizado | date: 'dd-MM-yyyy HH:mm' }}
           }
         </small>
       </p>
     }
 
-    <ion-searchbar
-      placeholder="Buscar asignatura"
-      [debounce]="400"
-      (ionInput)="buscar($event)">
-    </ion-searchbar>
+    <!-- Búsqueda y filtro -->
+    <div class="filtros">
+      <ion-searchbar
+        placeholder="Buscar asignatura"
+        [debounce]="400"
+        (ionInput)="buscar($event)">
+      </ion-searchbar>
 
-    <ion-select
-      label="Semestre"
-      labelPlacement="stacked"
-      interface="popover"
-      placeholder="Todos"
-      [value]="semestre()"
-      (ionChange)="cambiarSemestre($event.detail.value)">
-      <ion-select-option [value]="null">Todos</ion-select-option>
-      @for (s of semestres; track s) {
-        <ion-select-option [value]="s">Semestre {{ s }}</ion-select-option>
-      }
-    </ion-select>
+      <ion-select
+        label="Semestre"
+        labelPlacement="stacked"
+        interface="popover"
+        placeholder="Todos"
+        [value]="semestre()"
+        (ionChange)="cambiarSemestre($event.detail.value)">
 
+        <ion-select-option [value]="null">
+          Todos
+        </ion-select-option>
+
+        @for (s of semestres; track s) {
+          <ion-select-option [value]="s">
+            Semestre {{ s }}
+          </ion-select-option>
+        }
+      </ion-select>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="leyenda">
+      <span>✅ Aprobado</span>
+      <span>❌ Reprobado</span>
+      <span>🔒 Bloqueado</span>
+      <span>○ Pendiente</span>
+    </div>
+
+    <!-- Estado de la consulta de progreso -->
+    @if (cargandoProgreso()) {
+      <div class="estado" role="status">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Cargando progreso académico...</span>
+      </div>
+    }
+
+    @if (errorProgreso()) {
+      <p role="alert">
+        <ion-text color="danger">
+          {{ errorProgreso() }}
+        </ion-text>
+      </p>
+    }
+
+    <!-- Estado de la consulta de asignaturas -->
     @if (cargando()) {
       <div class="estado" role="status">
         <ion-spinner name="crescent"></ion-spinner>
@@ -55,32 +97,153 @@
         <ion-text color="danger">{{ error() }}</ion-text>
       </p>
     } @else if (grupos().length === 0) {
-      <p>No hay asignaturas para mostrar. Un administrador debe ejecutar la ingesta de la malla.</p>
+      <p>No hay asignaturas para mostrar.</p>
     } @else {
-      @for (grupo of grupos(); track grupo.semestre) {
-        <h2>Semestre {{ grupo.semestre }}</h2>
 
-        @for (curso of grupo.cursos; track curso.id) {
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ curso.name }}</ion-card-title>
-            </ion-card-header>
+      <p class="indicacion">
+        Desliza horizontalmente para recorrer los semestres.
+      </p>
 
-            <ion-card-content>
-              <p><strong>Código:</strong> {{ curso.code }}</p>
-              <p>
-                <strong>Créditos:</strong>
-                {{ curso.credits ?? 'No publicado por la fuente' }}
-              </p>
-              @if (curso.category) {
-                <ion-badge color="medium">{{ curso.category }}</ion-badge>
+      <!-- Malla curricular -->
+      <div
+        class="malla-scroll"
+        role="region"
+        aria-label="Malla curricular por semestres"
+        tabindex="0">
+
+        <div class="malla-grid">
+
+          @for (grupo of grupos(); track grupo.semestre) {
+
+            <section class="semestre-columna">
+
+              <div class="semestre-header">
+                <h2>Semestre {{ grupo.semestre }}</h2>
+                <span>
+                  {{ grupo.cursos.length }} asignaturas
+                </span>
+              </div>
+
+              @for (curso of grupo.cursos; track curso.id) {
+
+                <ion-card
+                  class="ramo-card"
+                  [class.ramo-aprobado]="resultadoDe(curso.id) === 'APPROVED'"
+                  [class.ramo-reprobado]="resultadoDe(curso.id) === 'FAILED'"
+                  [class.ramo-bloqueado]="
+                    !resultadoDe(curso.id) &&
+                    disponibilidadDe(curso.id)?.status === 'BLOCKED'
+                  ">
+
+                  <ion-card-header>
+                    <ion-card-title>
+                      {{ curso.name }}
+                    </ion-card-title>
+                  </ion-card-header>
+
+                  <ion-card-content>
+
+                    <!-- Estado académico -->
+                    <div class="ramo-estado">
+                      @if (resultadoDe(curso.id) === 'APPROVED') {
+                        <ion-badge color="success">
+                          ✓ Aprobado
+                        </ion-badge>
+                      } @else if (resultadoDe(curso.id) === 'FAILED') {
+                        <ion-badge color="danger">
+                          ✕ Reprobado
+                        </ion-badge>
+                      } @else if (disponibilidadDe(curso.id)?.status === 'BLOCKED') {
+                        <ion-badge color="medium">
+                          🔒 Bloqueado
+                        </ion-badge>
+                      } @else if (disponibilidadDe(curso.id)?.status === 'AVAILABLE') {
+                        <ion-badge color="primary">
+                          Habilitado
+                        </ion-badge>
+                      } @else {
+                        <ion-badge color="warning">
+                          Requisitos sin verificar
+                        </ion-badge>
+                      }
+                    </div>
+
+                    <!-- Datos del ramo -->
+                    <p class="ramo-codigo">
+                      {{ curso.code }}
+                    </p>
+
+                    <!-- Prerrequisitos pendientes -->
+                    @if (disponibilidadDe(curso.id); as regla) {
+                      @if (regla.missingPrerequisites.length > 0) {
+                        <div class="prerrequisitos">
+                          <strong>Falta aprobar:</strong>
+                          <ul>
+                            @for (codigo of regla.missingPrerequisites; track codigo) {
+                              <li>
+                                {{ codigo.replaceAll('-', ' ') }}
+                              </li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                    }
+
+                    <!-- Acciones del estudiante -->
+                    <div class="acciones-ramo">
+
+                      <button
+                        type="button"
+                        class="boton-resultado boton-aprobar"
+                        [class.seleccionado]="resultadoDe(curso.id) === 'APPROVED'"
+                        [attr.aria-pressed]="resultadoDe(curso.id) === 'APPROVED'"
+                        [disabled]="
+                          cargandoProgreso() ||
+                          guardandoCursoId() !== null ||
+                          disponibilidadDe(curso.id)?.status === 'BLOCKED'
+                        "
+                        (click)="marcarCurso(curso.id, 'APPROVED')">
+                        ✓ Aprobar
+                      </button>
+
+                      <button
+                        type="button"
+                        class="boton-resultado boton-reprobar"
+                        [class.seleccionado]="resultadoDe(curso.id) === 'FAILED'"
+                        [attr.aria-pressed]="resultadoDe(curso.id) === 'FAILED'"
+                        [disabled]="
+                          cargandoProgreso() ||
+                          guardandoCursoId() !== null ||
+                          disponibilidadDe(curso.id)?.status === 'BLOCKED'
+                        "
+                        (click)="marcarCurso(curso.id, 'FAILED')">
+                        ✕ Reprobar
+                      </button>
+
+                      @if (resultadoDe(curso.id)) {
+                        <button
+                          type="button"
+                          class="boton-limpiar"
+                          [disabled]="
+                            cargandoProgreso() ||
+                            guardandoCursoId() !== null
+                          "
+                          (click)="limpiarCurso(curso.id)">
+                          Quitar selección
+                        </button>
+                      }
+
+                    </div>
+
+                  </ion-card-content>
+                </ion-card>
               }
-            </ion-card-content>
-          </ion-card>
-        }
-      }
+            </section>
+          }
+
+        </div>
+      </div>
     }
 
   </div>
-
 </ion-content>
