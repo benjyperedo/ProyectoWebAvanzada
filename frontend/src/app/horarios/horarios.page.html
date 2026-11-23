@@ -1,3 +1,4 @@
+
 <ion-header>
   <ion-toolbar>
     <ion-title>Generador de horarios</ion-title>
@@ -5,70 +6,928 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="horarios-container">
 
+    <!-- ENCABEZADO -->
     <section class="header-section">
       <h1>Configura tus preferencias</h1>
       <p>
-        LISTOCO utilizará tus preferencias académicas para proponer horarios que se ajusten mejor a tus necesidades.
+        LISTOCO te ayuda a encontrar horarios sin choques,
+        según tu progreso académico y tus preferencias.
       </p>
     </section>
 
+    <!-- ====================================== -->
+    <!-- PREFERENCIAS DEL ESTUDIANTE -->
+    <!-- ====================================== -->
+
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Preferencias</ion-card-title>
+        <ion-card-title>
+          Preferencias del estudiante
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
 
         <ion-item>
-          <ion-select label="Jornada preferida" labelPlacement="stacked">
-            <ion-select-option value="manana">Mañana</ion-select-option>
-            <ion-select-option value="tarde">Tarde</ion-select-option>
-            <ion-select-option value="indiferente">Indiferente</ion-select-option>
+          <ion-select
+            label="Jornada preferida"
+            labelPlacement="stacked"
+            [value]="preferencias().preferredShift"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias() || guardandoHorario()"
+            (ionChange)="cambiarJornada($event.detail.value)">
+
+            <ion-select-option value="MORNING">
+              Mañana
+            </ion-select-option>
+
+            <ion-select-option value="AFTERNOON">
+              Tarde
+            </ion-select-option>
+
+            <ion-select-option value="ANY">
+              Indiferente
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
         <ion-item>
-          <ion-select label="Día libre preferido" labelPlacement="stacked">
-            <ion-select-option value="lunes">Lunes</ion-select-option>
-            <ion-select-option value="martes">Martes</ion-select-option>
-            <ion-select-option value="miercoles">Miércoles</ion-select-option>
-            <ion-select-option value="jueves">Jueves</ion-select-option>
-            <ion-select-option value="viernes">Viernes</ion-select-option>
+          <ion-select
+            label="Día libre preferido"
+            labelPlacement="stacked"
+            [value]="preferencias().preferredFreeDay"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias() || guardandoHorario()"
+            (ionChange)="cambiarDiaLibre($event.detail.value)">
+
+            <ion-select-option [value]="null">
+              Sin preferencia
+            </ion-select-option>
+
+            <ion-select-option value="MONDAY">
+              Lunes
+            </ion-select-option>
+
+            <ion-select-option value="TUESDAY">
+              Martes
+            </ion-select-option>
+
+            <ion-select-option value="WEDNESDAY">
+              Miércoles
+            </ion-select-option>
+
+            <ion-select-option value="THURSDAY">
+              Jueves
+            </ion-select-option>
+
+            <ion-select-option value="FRIDAY">
+              Viernes
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
         <ion-item>
-          <ion-select label="Hora máxima de término" labelPlacement="stacked">
-            <ion-select-option value="1600">16:00</ion-select-option>
-            <ion-select-option value="1800">18:00</ion-select-option>
-            <ion-select-option value="2000">20:00</ion-select-option>
+          <ion-select
+            label="Hora máxima de término"
+            labelPlacement="stacked"
+            [value]="preferencias().latestEndTime"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias() || guardandoHorario()"
+            (ionChange)="cambiarHoraTermino($event.detail.value)">
+
+            <ion-select-option value="16:00">
+              16:00
+            </ion-select-option>
+
+            <ion-select-option value="18:00">
+              18:00
+            </ion-select-option>
+
+            <ion-select-option value="20:00">
+              20:00
+            </ion-select-option>
+
           </ion-select>
         </ion-item>
 
-        <ion-button expand="block" class="generate-button">
-          Generar horario
+        <ion-item>
+          <ion-select
+            label="Cantidad máxima de asignaturas"
+            labelPlacement="stacked"
+            [value]="preferencias().maxCourses"
+            [disabled]="cargandoPreferencias() || guardandoPreferencias() || guardandoHorario()"
+            (ionChange)="cambiarMaxCursos($event.detail.value)">
+
+            <ion-select-option [value]="1">1 ramo</ion-select-option>
+            <ion-select-option [value]="2">2 ramos</ion-select-option>
+            <ion-select-option [value]="3">3 ramos</ion-select-option>
+            <ion-select-option [value]="4">4 ramos</ion-select-option>
+            <ion-select-option [value]="5">5 ramos</ion-select-option>
+            <ion-select-option [value]="6">6 ramos</ion-select-option>
+            <ion-select-option [value]="7">7 ramos</ion-select-option>
+            <ion-select-option [value]="8">8 ramos</ion-select-option>
+
+          </ion-select>
+        </ion-item>
+
+        <ion-button
+          expand="block"
+          [disabled]="cargandoPreferencias() || guardandoPreferencias() || guardandoHorario()"
+          (click)="guardarPreferencias()">
+
+          @if (guardandoPreferencias()) {
+            Guardando preferencias...
+          } @else {
+            Guardar preferencias
+          }
+
         </ion-button>
+
+        @if (cargandoPreferencias()) {
+          <p role="status">
+            Cargando preferencias...
+          </p>
+        }
+
+        @if (preferenciasSinGuardar()) {
+          <p style="color: var(--ion-color-warning)">
+            Tienes preferencias sin guardar.
+          </p>
+        }
+
+        @if (mensajePreferencias()) {
+          <p
+            role="status"
+            style="color: var(--ion-color-success)">
+            {{ mensajePreferencias() }}
+          </p>
+        }
+
+        @if (errorPreferencias()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorPreferencias() }}
+          </p>
+        }
 
       </ion-card-content>
     </ion-card>
 
+    <!-- ====================================== -->
+    <!-- SELECCIÓN DE ASIGNATURAS -->
+    <!-- ====================================== -->
+
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Horario recomendado</ion-card-title>
+        <ion-card-title>
+          Selecciona tus asignaturas
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
-        <p><strong>Lunes:</strong> Base de Datos - 09:30</p>
-        <p><strong>Martes:</strong> Ingeniería Web Avanzada - 11:00</p>
-        <p><strong>Miércoles:</strong> Base de Datos - 09:30</p>
-        <p><strong>Jueves:</strong> Ingeniería Web Avanzada - 11:00</p>
-        <p><strong>Viernes:</strong> Día libre</p>
+
+        <p>
+          Elige los ramos habilitados según tu avance
+          académico y sus prerrequisitos.
+        </p>
+
+        <p class="contador-cursos">
+          <strong>
+            {{ cursosSeleccionados().length }}
+            de
+            {{ preferencias().maxCourses }}
+            asignaturas seleccionadas
+          </strong>
+        </p>
+
+        @if (cargandoCursos()) {
+          <p role="status">
+            Cargando asignaturas disponibles...
+          </p>
+        }
+
+        @if (errorCursos()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorCursos() }}
+          </p>
+        }
+
+        @if (errorSeleccion()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorSeleccion() }}
+          </p>
+        }
+
+        @if (!cargandoCursos() && !errorCursos()) {
+
+          @if (cursosElegibles().length === 0) {
+
+            <p>
+              No hay asignaturas habilitadas en este momento.
+            </p>
+
+          } @else {
+
+            <div class="lista-cursos">
+
+              @for (curso of cursosElegibles(); track curso.id) {
+
+                <div
+                  class="curso-elegible"
+                  [class.curso-seleccionado]="estaSeleccionado(curso.id)">
+
+                  <div class="curso-info">
+                    <strong>
+                      {{ curso.name }}
+                    </strong>
+
+                    <p>
+                      Semestre {{ curso.suggestedSemester }}
+                    </p>
+                  </div>
+
+                  <ion-button
+                    size="small"
+                    [fill]="estaSeleccionado(curso.id) ? 'solid' : 'outline'"
+                    [color]="estaSeleccionado(curso.id) ? 'success' : 'primary'"
+                    [disabled]="generandoHorarios() || guardandoHorario() || cargandoPreferencias() || guardandoPreferencias()"
+                    (click)="alternarCurso(curso.id)">
+
+                    @if (estaSeleccionado(curso.id)) {
+                      Seleccionado
+                    } @else {
+                      Seleccionar
+                    }
+
+                  </ion-button>
+
+                </div>
+
+              }
+
+            </div>
+
+          }
+
+        }
+
+        <!-- GENERAR HORARIOS -->
+
+        <ion-button
+          expand="block"
+          class="generate-button"
+          [disabled]="generandoHorarios() || guardandoHorario() || cargandoCursos() || cargandoPreferencias() || guardandoPreferencias() || !!errorCursos() || !!errorPreferencias()"
+          (click)="generarHorarios()">
+
+          @if (generandoHorarios()) {
+            Generando horarios...
+          } @else {
+            Generar horarios inteligentes
+          }
+
+        </ion-button>
+
+        @if (generandoHorarios()) {
+          <p role="status">
+            Buscando combinaciones de horarios sin choques...
+          </p>
+        }
+
+        @if (errorGeneracion()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorGeneracion() }}
+          </p>
+        }
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ====================================== -->
+    <!-- HORARIOS GENERADOS -->
+    <!-- ====================================== -->
+
+    @if (horariosGenerados(); as resultado) {
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            Horarios recomendados
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <p>
+            {{ resultado.message }}
+          </p>
+
+          <p>
+            <strong>Alternativas encontradas:</strong>
+            {{ resultado.totalRecommendations }}
+          </p>
+
+          <p>
+            <strong>Período:</strong>
+            {{ resultado.period.year }},
+            semestre {{ resultado.period.semester }}
+          </p>
+
+          @if (resultado.period.isDemo) {
+            <p class="horario-aviso">
+              Estos horarios son de demostración y
+              no corresponden a la oferta oficial de la PUCV.
+            </p>
+          }
+
+          @if (resultado.recommendations.length === 0) {
+            <p>
+              No se encontraron combinaciones sin choques.
+              Prueba seleccionando otras asignaturas.
+            </p>
+          }
+
+          <!-- ALTERNATIVA ACTIVA -->
+
+          @if (recomendacionActiva(); as recomendacion) {
+
+            <!-- NAVEGACIÓN -->
+
+            <div class="lista-cursos">
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                [disabled]="alternativaActiva() === 0 || guardandoHorario()"
+                (click)="cambiarAlternativa(alternativaActiva() - 1)">
+
+                Alternativa anterior
+
+              </ion-button>
+
+              <p class="contador-cursos">
+                <strong>
+                  Alternativa {{ alternativaActiva() + 1 }}
+                  de {{ resultado.recommendations.length }}
+                </strong>
+              </p>
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                [disabled]="alternativaActiva() >= resultado.recommendations.length - 1 || guardandoHorario()"
+                (click)="cambiarAlternativa(alternativaActiva() + 1)">
+
+                Siguiente alternativa
+
+              </ion-button>
+
+            </div>
+
+            <!-- PUNTAJE -->
+
+            <div class="horario-puntaje">
+              Puntaje: {{ recomendacion.score }} puntos
+            </div>
+
+            @if (alternativaActiva() === 0) {
+              <p style="color: var(--ion-color-success)">
+                Mejor alternativa según tus preferencias.
+              </p>
+            }
+
+            <!-- LEYENDA -->
+
+            <div class="calendario-leyenda">
+
+              @for (
+                seccion of recomendacion.sections;
+                track seccion.id;
+                let indice = $index
+              ) {
+
+                <div class="leyenda-item">
+
+                  <span
+                    class="leyenda-color"
+                    [class.bloque-color-0]="indice % 5 === 0"
+                    [class.bloque-color-1]="indice % 5 === 1"
+                    [class.bloque-color-2]="indice % 5 === 2"
+                    [class.bloque-color-3]="indice % 5 === 3"
+                    [class.bloque-color-4]="indice % 5 === 4">
+                  </span>
+
+                  <span>
+                    {{ obtenerNombreAsignatura(seccion.courseId) }}
+                    ({{ seccion.code }})
+                  </span>
+
+                </div>
+
+              }
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- CALENDARIO RECOMENDADO -->
+            <!-- ================================== -->
+
+            <div
+              class="calendario-scroll"
+              role="region"
+              aria-label="Horario recomendado"
+              tabindex="0">
+
+              <div class="calendario-tabla">
+
+                <div class="calendario-encabezado">
+
+                  <div class="columna-hora">
+                    Hora
+                  </div>
+
+                  @for (dia of diasCalendario; track dia.codigo) {
+                    <div class="nombre-dia">
+                      {{ dia.nombre }}
+                    </div>
+                  }
+
+                </div>
+
+                <div class="calendario-cuerpo">
+
+                  <div class="calendario-horas">
+
+                    @for (
+                      hora of horasCalendario;
+                      track hora.etiqueta
+                    ) {
+
+                      <span
+                        class="etiqueta-hora"
+                        [style.top.px]="hora.posicion">
+                        {{ hora.etiqueta }}
+                      </span>
+
+                    }
+
+                  </div>
+
+                  @for (dia of diasCalendario; track dia.codigo) {
+
+                    <div class="calendario-dia">
+
+                      @for (
+                        bloque of obtenerBloquesPorDia(recomendacion, dia.codigo);
+                        track bloque.id
+                      ) {
+
+                        <div
+                          class="bloque-clase"
+                          [class.bloque-color-0]="bloque.color === 0"
+                          [class.bloque-color-1]="bloque.color === 1"
+                          [class.bloque-color-2]="bloque.color === 2"
+                          [class.bloque-color-3]="bloque.color === 3"
+                          [class.bloque-color-4]="bloque.color === 4"
+                          [style.top.px]="bloque.posicion"
+                          [style.height.px]="bloque.altura">
+
+                          <span class="bloque-asignatura">
+                            {{ bloque.nombreAsignatura }}
+                          </span>
+
+                          <span class="bloque-seccion">
+                            Sección {{ bloque.seccion }}
+                          </span>
+
+                          <span class="bloque-hora">
+                            {{ bloque.inicio }} -
+                            {{ bloque.termino }}
+                          </span>
+
+                        </div>
+
+                      }
+
+                    </div>
+
+                  }
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- DETALLE DE ASIGNATURAS -->
+            <!-- ================================== -->
+
+            <h3>Detalle de asignaturas</h3>
+
+            @for (
+              seccion of recomendacion.sections;
+              track seccion.id
+            ) {
+
+              <div class="curso-elegible">
+
+                <div class="curso-info">
+
+                  <strong>
+                    {{ obtenerNombreAsignatura(seccion.courseId) }}
+                  </strong>
+
+                  <p>
+                    Sección {{ seccion.code }}
+                  </p>
+
+                  @for (
+                    bloque of seccion.meetings;
+                    track $index
+                  ) {
+
+                    <p>
+                      {{
+                        bloque.day === 'MONDAY' ? 'Lunes' :
+                        bloque.day === 'TUESDAY' ? 'Martes' :
+                        bloque.day === 'WEDNESDAY' ? 'Miércoles' :
+                        bloque.day === 'THURSDAY' ? 'Jueves' :
+                        'Viernes'
+                      }}:
+                      {{ bloque.startTime }} -
+                      {{ bloque.endTime }}
+                    </p>
+
+                  }
+
+                </div>
+
+              </div>
+
+            }
+
+            <!-- ================================== -->
+            <!-- BOTÓN GUARDAR HORARIO -->
+            <!-- ================================== -->
+
+            <ion-button
+              expand="block"
+              color="success"
+              class="generate-button"
+              [disabled]="guardandoHorario() || generandoHorarios() || preferenciasSinGuardar() || estaAlternativaGuardada()"
+              (click)="guardarHorarioElegido()">
+
+              @if (guardandoHorario()) {
+                Guardando horario...
+              } @else if (estaAlternativaGuardada()) {
+                Este horario ya está guardado
+              } @else {
+                Guardar este horario
+              }
+
+            </ion-button>
+
+            @if (mensajeHorarioGuardado()) {
+              <p
+                role="status"
+                style="color: var(--ion-color-success)">
+                {{ mensajeHorarioGuardado() }}
+              </p>
+            }
+
+            @if (errorHorarioGuardado()) {
+              <p
+                role="alert"
+                style="color: var(--ion-color-danger)">
+                {{ errorHorarioGuardado() }}
+              </p>
+            }
+
+            <p>
+              <small>
+                Guardar esta alternativa reemplazará
+                tu horario anterior del mismo período.
+              </small>
+            </p>
+
+          }
+
+        </ion-card-content>
+      </ion-card>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- HORARIO GUARDADO EN POSTGRESQL -->
+    <!-- ====================================== -->
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          Mi horario guardado
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+
+        @if (cargandoHorarioGuardado()) {
+
+          <p role="status">
+            Recuperando tu horario guardado...
+          </p>
+
+        } @else {
+
+          @if (horarioGuardado(); as horario) {
+
+            <p style="color: var(--ion-color-success)">
+              <strong>
+                Tienes un horario guardado.
+              </strong>
+            </p>
+
+            <p>
+              <strong>Período:</strong>
+              {{ horario.period.year }},
+              semestre {{ horario.period.semester }}
+            </p>
+
+            <p>
+              <strong>Asignaturas:</strong>
+              {{ horario.sections.length }}
+            </p>
+
+            @if (horario.period.isDemo) {
+              <p class="horario-aviso">
+                Este horario es de demostración.
+                No equivale a una inscripción oficial
+                de asignaturas en la PUCV.
+              </p>
+            }
+
+            <!-- LEYENDA DEL HORARIO GUARDADO -->
+
+            <div class="calendario-leyenda">
+
+              @for (
+                seccion of horario.sections;
+                track seccion.id;
+                let indice = $index
+              ) {
+
+                <div class="leyenda-item">
+
+                  <span
+                    class="leyenda-color"
+                    [class.bloque-color-0]="indice % 5 === 0"
+                    [class.bloque-color-1]="indice % 5 === 1"
+                    [class.bloque-color-2]="indice % 5 === 2"
+                    [class.bloque-color-3]="indice % 5 === 3"
+                    [class.bloque-color-4]="indice % 5 === 4">
+                  </span>
+
+                  <span>
+                    {{ seccion.courseName }}
+                    ({{ seccion.code }})
+                  </span>
+
+                </div>
+
+              }
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- CALENDARIO GUARDADO -->
+            <!-- ================================== -->
+
+            @if (recomendacionGuardada(); as recomendacion) {
+
+              <div
+                class="calendario-scroll"
+                role="region"
+                aria-label="Mi horario guardado"
+                tabindex="0">
+
+                <div class="calendario-tabla">
+
+                  <div class="calendario-encabezado">
+
+                    <div class="columna-hora">
+                      Hora
+                    </div>
+
+                    @for (
+                      dia of diasCalendario;
+                      track dia.codigo
+                    ) {
+
+                      <div class="nombre-dia">
+                        {{ dia.nombre }}
+                      </div>
+
+                    }
+
+                  </div>
+
+                  <div class="calendario-cuerpo">
+
+                    <div class="calendario-horas">
+
+                      @for (
+                        hora of horasCalendario;
+                        track hora.etiqueta
+                      ) {
+
+                        <span
+                          class="etiqueta-hora"
+                          [style.top.px]="hora.posicion">
+
+                          {{ hora.etiqueta }}
+
+                        </span>
+
+                      }
+
+                    </div>
+
+                    @for (
+                      dia of diasCalendario;
+                      track dia.codigo
+                    ) {
+
+                      <div class="calendario-dia">
+
+                        @for (
+                          bloque of obtenerBloquesPorDia(recomendacion, dia.codigo);
+                          track bloque.id
+                        ) {
+
+                          <div
+                            class="bloque-clase"
+                            [class.bloque-color-0]="bloque.color === 0"
+                            [class.bloque-color-1]="bloque.color === 1"
+                            [class.bloque-color-2]="bloque.color === 2"
+                            [class.bloque-color-3]="bloque.color === 3"
+                            [class.bloque-color-4]="bloque.color === 4"
+                            [style.top.px]="bloque.posicion"
+                            [style.height.px]="bloque.altura">
+
+                            <span class="bloque-asignatura">
+                              {{ bloque.nombreAsignatura }}
+                            </span>
+
+                            <span class="bloque-seccion">
+                              Sección {{ bloque.seccion }}
+                            </span>
+
+                            <span class="bloque-hora">
+                              {{ bloque.inicio }} -
+                              {{ bloque.termino }}
+                            </span>
+
+                          </div>
+
+                        }
+
+                      </div>
+
+                    }
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            }
+
+            <!-- ================================== -->
+            <!-- ASIGNATURAS GUARDADAS -->
+            <!-- ================================== -->
+
+            <h3>Asignaturas guardadas</h3>
+
+            @for (
+              seccion of horario.sections;
+              track seccion.id
+            ) {
+
+              <div class="curso-elegible">
+
+                <div class="curso-info">
+
+                  <strong>
+                    {{ seccion.courseName }}
+                  </strong>
+
+                  <p>
+                    Sección {{ seccion.code }}
+                  </p>
+
+                  @for (
+                    bloque of seccion.meetings;
+                    track $index
+                  ) {
+
+                    <p>
+                      {{
+                        bloque.day === 'MONDAY' ? 'Lunes' :
+                        bloque.day === 'TUESDAY' ? 'Martes' :
+                        bloque.day === 'WEDNESDAY' ? 'Miércoles' :
+                        bloque.day === 'THURSDAY' ? 'Jueves' :
+                        'Viernes'
+                      }}:
+                      {{ bloque.startTime }} -
+                      {{ bloque.endTime }}
+                    </p>
+
+                  }
+
+                </div>
+
+              </div>
+
+            }
+
+            <p>
+              <small>
+                Este horario está guardado en PostgreSQL
+                y asociado a tu cuenta de estudiante.
+              </small>
+            </p>
+
+          } @else {
+
+            <p>
+              Aún no tienes un horario guardado
+              para el primer semestre de 2027.
+            </p>
+
+          }
+
+        }
+
+        @if (!horariosGenerados() && errorHorarioGuardado()) {
+          <p
+            role="alert"
+            style="color: var(--ion-color-danger)">
+            {{ errorHorarioGuardado() }}
+          </p>
+        }
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ====================================== -->
+    <!-- RESUMEN DE PREFERENCIAS -->
+    <!-- ====================================== -->
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          Preferencias seleccionadas
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+
+        <p>
+          <strong>Jornada:</strong>
+          {{
+            preferencias().preferredShift === 'MORNING'
+              ? 'Mañana'
+              : preferencias().preferredShift === 'AFTERNOON'
+                ? 'Tarde'
+                : 'Indiferente'
+          }}
+        </p>
+
+        <p>
+          <strong>Día libre:</strong>
+          {{ preferencias().preferredFreeDay || 'Sin preferencia' }}
+        </p>
+
+        <p>
+          <strong>Hora máxima:</strong>
+          {{ preferencias().latestEndTime }}
+        </p>
+
+        <p>
+          <strong>Máximo de asignaturas:</strong>
+          {{ preferencias().maxCourses }}
+        </p>
+
       </ion-card-content>
     </ion-card>
 
   </div>
-
 </ion-content>

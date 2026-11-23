@@ -1,71 +1,755 @@
+
 <ion-header>
   <ion-toolbar>
-    <ion-title>Calendario</ion-title>
+    <ion-title>Mi calendario</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="calendario-container">
 
-    <section class="header-section">
-      <h1>Mi calendario académico</h1>
+    <!-- ====================================== -->
+    <!-- ENCABEZADO PRINCIPAL -->
+    <!-- ====================================== -->
+
+    <section class="calendario-intro">
+      <h1>Mi calendario</h1>
+
       <p>
-        Organiza pruebas, entregas, presentaciones y eventos personales.
+        Organiza tus actividades universitarias
+        y personales en un solo lugar.
       </p>
     </section>
 
-    <ion-card>
+    <!-- ====================================== -->
+    <!-- NOTIFICACIONES DEL CALENDARIO -->
+    <!-- ====================================== -->
+
+    <ion-card class="notificaciones-card">
+
       <ion-card-header>
-        <ion-card-title>Próximos eventos</ion-card-title>
+        <ion-card-title>
+          Recordatorios
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
 
-        <div class="event-item">
-          <div>
-            <h3>Certamen 1 - Base de Datos</h3>
-            <p>28/09/2026 - 10:00 hrs</p>
-          </div>
+        <p>
+          Activa las notificaciones para recibir
+          recordatorios de tus eventos mientras
+          LISTOCO esté abierto.
+        </p>
 
-          <ion-badge color="danger">
-            Prueba
-          </ion-badge>
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="activarNotificaciones()">
+
+          Activar notificaciones
+
+        </ion-button>
+
+        @if (mensajePermisoNotificaciones()) {
+
+          <p
+            class="mensaje-calendario"
+            role="status">
+
+            {{ mensajePermisoNotificaciones() }}
+
+          </p>
+
+        }
+
+        <p>
+          <small>
+            Los avisos funcionan mientras LISTOCO
+            permanezca abierto en el navegador.
+          </small>
+        </p>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ====================================== -->
+    <!-- CALENDARIO MENSUAL -->
+    <!-- ====================================== -->
+
+    <ion-card class="calendario-card">
+
+      <ion-card-header>
+        <ion-card-title>
+          Calendario mensual
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+
+        <!-- NAVEGACIÓN ENTRE MESES -->
+
+        <div class="calendario-navegacion">
+
+          <ion-button
+            fill="outline"
+            size="small"
+            aria-label="Mes anterior"
+            (click)="cambiarMes(-1)">
+            &lt;
+          </ion-button>
+
+          <h2 class="titulo-mes">
+            {{ tituloMes() }}
+          </h2>
+
+          <ion-button
+            fill="outline"
+            size="small"
+            aria-label="Mes siguiente"
+            (click)="cambiarMes(1)">
+            &gt;
+          </ion-button>
+
         </div>
 
-        <div class="event-item">
-          <div>
-            <h3>Entrega Ingeniería Web Avanzada</h3>
-            <p>30/09/2026 - 23:59 hrs</p>
-          </div>
+        <div class="calendario-hoy">
 
-          <ion-badge color="warning">
-            Entrega
-          </ion-badge>
+          <ion-button
+            fill="clear"
+            size="small"
+            (click)="irAHoy()">
+
+            Ir a hoy
+
+          </ion-button>
+
         </div>
 
-        <div class="event-item">
-          <div>
-            <h3>Dentista</h3>
-            <p>02/10/2026 - 15:30 hrs</p>
+        <!-- LEYENDA DE CATEGORÍAS -->
+
+        <div class="calendario-leyenda">
+
+          <div class="leyenda-item">
+
+            <span class="punto-universidad"></span>
+
+            <span>
+              Universidad
+            </span>
+
           </div>
 
-          <ion-badge color="medium">
-            Personal
-          </ion-badge>
+          <div class="leyenda-item">
+
+            <span class="punto-personal"></span>
+
+            <span>
+              Personal
+            </span>
+
+          </div>
+
+        </div>
+
+        <!-- ================================== -->
+        <!-- CUADRÍCULA MENSUAL -->
+        <!-- ================================== -->
+
+        <div class="calendario-grid">
+
+          <!-- NOMBRES DE LOS DÍAS -->
+
+          @for (nombre of nombresDias; track $index) {
+
+            <div class="calendario-nombre-dia">
+              {{ nombre }}
+            </div>
+
+          }
+
+          <!-- DÍAS DEL MES -->
+
+          @for (dia of diasCalendario(); track dia.date) {
+
+            <button
+              type="button"
+              class="calendario-dia"
+              [class.dia-fuera-mes]="!dia.currentMonth"
+              [class.dia-actual]="dia.today"
+              [class.dia-seleccionado]="dia.selected"
+              [attr.aria-label]="dia.date"
+              [attr.aria-pressed]="dia.selected"
+              (click)="seleccionarDia(dia)">
+
+              <span class="dia-numero">
+                {{ dia.number }}
+              </span>
+
+              <!-- INDICADORES DE EVENTOS -->
+
+              <span class="dia-indicadores">
+
+                @for (
+                  evento of dia.events.slice(0, 3);
+                  track evento.id
+                ) {
+
+                  <span
+                    class="punto-evento"
+                    [class.punto-universidad]="evento.category === 'UNIVERSITY'"
+                    [class.punto-personal]="evento.category === 'PERSONAL'">
+                  </span>
+
+                }
+
+              </span>
+
+              <!-- EVENTOS ADICIONALES -->
+
+              @if (dia.events.length > 3) {
+
+                <span class="dia-mas-eventos">
+                  +{{ dia.events.length - 3 }}
+                </span>
+
+              }
+
+            </button>
+
+          }
+
+        </div>
+
+        <!-- ================================== -->
+        <!-- ESTADOS DEL CALENDARIO -->
+        <!-- ================================== -->
+
+        @if (cargandoEventos()) {
+
+          <p
+            class="mensaje-calendario"
+            role="status">
+
+            Cargando eventos...
+
+          </p>
+
+        }
+
+        @if (errorEventos()) {
+
+          <p
+            class="mensaje-error"
+            role="alert">
+
+            {{ errorEventos() }}
+
+          </p>
+
+        }
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ====================================== -->
+    <!-- EVENTOS DEL DÍA SELECCIONADO -->
+    <!-- ====================================== -->
+
+    <ion-card class="eventos-dia-card">
+
+      <ion-card-header>
+        <ion-card-title>
+          Eventos del día
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+
+        <!-- ENCABEZADO DEL DÍA -->
+
+        <div class="eventos-dia-encabezado">
+
+          <div class="eventos-dia-info">
+
+            <h2>
+              {{ tituloFechaSeleccionada() }}
+            </h2>
+
+            <ion-badge color="medium">
+
+              {{ eventosDiaSeleccionado().length }}
+              eventos
+
+            </ion-badge>
+
+          </div>
+
+          <ion-button
+            size="small"
+            [disabled]="guardandoEvento()"
+            (click)="abrirNuevoEvento()">
+
+            + Agregar evento
+
+          </ion-button>
+
+        </div>
+
+        <!-- ================================== -->
+        <!-- MENSAJE DE CONFIRMACIÓN -->
+        <!-- ================================== -->
+
+        @if (mensajeExito()) {
+
+          <p
+            class="mensaje-exito"
+            role="status">
+
+            {{ mensajeExito() }}
+
+          </p>
+
+        }
+
+        <!-- ================================== -->
+        <!-- DÍA SIN EVENTOS -->
+        <!-- ================================== -->
+
+        @if (
+          !cargandoEventos() &&
+          !errorEventos() &&
+          eventosDiaSeleccionado().length === 0
+        ) {
+
+          <div class="sin-eventos">
+
+            <p>
+              No tienes eventos para este día.
+            </p>
+
+            <p>
+              Puedes agregar una actividad universitaria
+              o personal cuando quieras.
+            </p>
+
+          </div>
+
+        }
+
+        <!-- ================================== -->
+        <!-- LISTA DE EVENTOS -->
+        <!-- ================================== -->
+
+        <div class="eventos-lista">
+
+          @for (
+            evento of eventosDiaSeleccionado();
+            track evento.id
+          ) {
+
+            <div
+              class="evento-item"
+              [class.evento-universidad]="evento.category === 'UNIVERSITY'"
+              [class.evento-personal]="evento.category === 'PERSONAL'">
+
+              <!-- BARRA DE COLOR -->
+
+              <span
+                class="evento-barra-color"
+                [style.background-color]="colorCategoria(evento.category)">
+              </span>
+
+              <!-- INFORMACIÓN DEL EVENTO -->
+
+              <div class="evento-contenido">
+
+                <h3>
+                  {{ evento.title }}
+                </h3>
+
+                <!-- CATEGORÍA Y HORA -->
+
+                <div class="evento-detalles">
+
+                  <span class="evento-categoria">
+
+                    <span
+                      class="punto-evento"
+                      [style.background-color]="colorCategoria(evento.category)">
+                    </span>
+
+                    {{ nombreCategoria(evento.category) }}
+
+                  </span>
+
+                  <span class="evento-hora">
+
+                    @if (evento.startTime) {
+
+                      {{ evento.startTime }}
+
+                    } @else {
+
+                      Todo el día
+
+                    }
+
+                  </span>
+
+                </div>
+
+                <!-- RECORDATORIO CONFIGURADO -->
+
+                @if (evento.reminderMinutesBefore !== null) {
+
+                  <p class="evento-recordatorio">
+
+                    @if (evento.reminderMinutesBefore === 0) {
+
+                      Recordatorio a la hora del evento
+
+                    } @else if (evento.reminderMinutesBefore === 1440) {
+
+                      Recordatorio 1 día antes
+
+                    } @else {
+
+                      Recordatorio
+                      {{ evento.reminderMinutesBefore }}
+                      minutos antes
+
+                    }
+
+                  </p>
+
+                }
+
+                <!-- ================================== -->
+                <!-- BOTONES DE EDITAR Y ELIMINAR -->
+                <!-- ================================== -->
+
+                <div class="evento-acciones">
+
+                  <ion-button
+                    size="small"
+                    fill="outline"
+                    [disabled]="guardandoEvento() || eliminandoEventoId() !== null"
+                    (click)="editarEvento(evento)">
+
+                    Editar
+
+                  </ion-button>
+
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    color="danger"
+                    [disabled]="guardandoEvento() || eliminandoEventoId() !== null"
+                    (click)="eliminarEvento(evento)">
+
+                    @if (eliminandoEventoId() === evento.id) {
+
+                      Eliminando...
+
+                    } @else {
+
+                      Eliminar
+
+                    }
+
+                  </ion-button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          }
+
         </div>
 
       </ion-card-content>
     </ion-card>
 
-    <ion-button
-      expand="block"
-      class="add-event-button">
+    <!-- ====================================== -->
+    <!-- FORMULARIO PARA CREAR O EDITAR EVENTO -->
+    <!-- ====================================== -->
 
-      Agregar evento
+    @if (formularioAbierto()) {
 
-    </ion-button>
+      <ion-card class="formulario-evento-card">
+
+        <ion-card-header>
+
+          <ion-card-title>
+
+            @if (eventoEditandoId() === null) {
+
+              Nuevo evento
+
+            } @else {
+
+              Editar evento
+
+            }
+
+          </ion-card-title>
+
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <div class="evento-formulario">
+
+            <!-- ================================== -->
+            <!-- NOMBRE DEL EVENTO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label for="evento-titulo">
+                Nombre del evento
+              </label>
+
+              <input
+                id="evento-titulo"
+                type="text"
+                maxlength="150"
+                placeholder="Ej. Prueba de Finanzas"
+                [value]="tituloEvento()"
+                [disabled]="guardandoEvento()"
+                (input)="cambiarTitulo($any($event.target).value)"/>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- FECHA DEL EVENTO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label for="evento-fecha">
+                Fecha
+              </label>
+
+              <input
+                id="evento-fecha"
+                type="date"
+                [value]="fechaEvento()"
+                [disabled]="guardandoEvento()"
+                (change)="cambiarFecha($any($event.target).value)"/>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- HORA DEL EVENTO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label for="evento-hora">
+                Hora del evento (opcional)
+              </label>
+
+              <input
+                id="evento-hora"
+                type="time"
+                [value]="horaEvento()"
+                [disabled]="guardandoEvento()"
+                (change)="cambiarHora($any($event.target).value)"/>
+
+              <small>
+                Si no seleccionas una hora,
+                se mostrará como evento de todo el día.
+              </small>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- CATEGORÍA DEL EVENTO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label>
+                Tipo de evento
+              </label>
+
+              <p class="formulario-ayuda">
+                Elige el tipo de actividad.
+                LISTOCO asignará su color automáticamente.
+              </p>
+
+              <div class="categoria-opciones">
+
+                <!-- UNIVERSIDAD -->
+
+                <button
+                  type="button"
+                  class="categoria-boton categoria-universidad"
+                  [class.categoria-activa]="categoriaEvento() === 'UNIVERSITY'"
+                  [attr.aria-pressed]="categoriaEvento() === 'UNIVERSITY'"
+                  [disabled]="guardandoEvento()"
+                  (click)="cambiarCategoria('UNIVERSITY')">
+
+                  <span class="punto-universidad"></span>
+
+                  Universidad
+
+                </button>
+
+                <!-- PERSONAL -->
+
+                <button
+                  type="button"
+                  class="categoria-boton categoria-personal"
+                  [class.categoria-activa]="categoriaEvento() === 'PERSONAL'"
+                  [attr.aria-pressed]="categoriaEvento() === 'PERSONAL'"
+                  [disabled]="guardandoEvento()"
+                  (click)="cambiarCategoria('PERSONAL')">
+
+                  <span class="punto-personal"></span>
+
+                  Personal
+
+                </button>
+
+              </div>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- RECORDATORIO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label class="recordatorio-checkbox">
+
+                <input
+                  type="checkbox"
+                  [checked]="recordatorioActivo()"
+                  [disabled]="guardandoEvento()"
+                  (change)="cambiarRecordatorio($any($event.target).checked)"/>
+
+                <span>
+                  Activar recordatorio
+                </span>
+
+              </label>
+
+              <!-- OPCIONES DEL RECORDATORIO -->
+
+              @if (recordatorioActivo()) {
+
+                <div class="recordatorio-opciones">
+
+                  <label for="evento-recordatorio">
+                    ¿Cuándo quieres recibir el aviso?
+                  </label>
+
+                  <select
+                    id="evento-recordatorio"
+                    [value]="minutosRecordatorio()"
+                    [disabled]="guardandoEvento()"
+                    (change)="cambiarMinutosRecordatorio(+$any($event.target).value)">
+
+                    @for (
+                      opcion of opcionesRecordatorio;
+                      track opcion.minutos
+                    ) {
+
+                      <option [value]="opcion.minutos">
+                        {{ opcion.texto }}
+                      </option>
+
+                    }
+
+                  </select>
+
+                  <p class="formulario-ayuda">
+                    Para configurar un recordatorio,
+                    el evento debe tener una hora.
+                  </p>
+
+                </div>
+
+              }
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- ERRORES DEL FORMULARIO -->
+            <!-- ================================== -->
+
+            @if (errorFormulario()) {
+
+              <p
+                class="mensaje-error"
+                role="alert">
+
+                {{ errorFormulario() }}
+
+              </p>
+
+            }
+
+            <!-- ================================== -->
+            <!-- BOTONES DEL FORMULARIO -->
+            <!-- ================================== -->
+
+            <div class="formulario-acciones">
+
+              <ion-button
+                fill="outline"
+                color="medium"
+                [disabled]="guardandoEvento()"
+                (click)="cerrarFormulario()">
+
+                Cancelar
+
+              </ion-button>
+
+              <ion-button
+                [disabled]="guardandoEvento()"
+                (click)="guardarEvento()">
+
+                @if (guardandoEvento()) {
+
+                  Guardando...
+
+                } @else if (eventoEditandoId() !== null) {
+
+                  Guardar cambios
+
+                } @else {
+
+                  Crear evento
+
+                }
+
+              </ion-button>
+
+            </div>
+
+          </div>
+
+        </ion-card-content>
+      </ion-card>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- NOTA FINAL SOBRE RECORDATORIOS -->
+    <!-- ====================================== -->
+
+    <p class="calendario-nota">
+      Los recordatorios se guardan junto a cada evento.
+      Los avisos básicos funcionan mientras LISTOCO
+      esté abierto. No se envían notificaciones
+      push con la aplicación cerrada.
+    </p>
 
   </div>
-
 </ion-content>

@@ -1,58 +1,475 @@
+
+/* ==========================================
+   CONTENEDOR PRINCIPAL
+========================================== */
+
 .tramites-container {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
   padding: 24px;
+  padding-bottom: 48px;
 }
 
+/* ==========================================
+   ENCABEZADO
+========================================== */
+
 .header-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .header-section h1 {
-  margin-bottom: 6px;
+  margin: 0 0 8px;
   font-size: 2rem;
   font-weight: 700;
+  color: var(--ion-text-color);
 }
 
 .header-section p {
   margin: 0;
   color: var(--ion-color-medium);
+  line-height: 1.6;
 }
 
+/* ==========================================
+   TÍTULOS DE SECCIÓN
+========================================== */
+
 h2 {
-  margin-top: 24px;
-  margin-bottom: 12px;
+  margin-top: 28px;
+  margin-bottom: 14px;
   font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
 }
+
+/* ==========================================
+   BOTONES DE NUEVOS TRÁMITES
+========================================== */
 
 .tramites-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
+
+.tramites-actions ion-button {
+  margin: 0;
+  min-height: 48px;
+  font-weight: 600;
+  text-transform: none;
+  --border-radius: 10px;
+}
+
+/* ==========================================
+   TARJETAS GENERALES
+========================================== */
 
 ion-card {
   margin-left: 0;
   margin-right: 0;
+  border-radius: 14px;
+}
+
+ion-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+ion-card-content {
+  line-height: 1.6;
 }
 
 ion-badge {
   margin-top: 8px;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* ==========================================
+   TARJETA DE FORMULARIO
+========================================== */
+
+.tramite-formulario-card {
+  margin-top: 20px;
+  margin-bottom: 28px;
+}
+
+.tramite-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ==========================================
+   CAMPOS DEL FORMULARIO
+========================================== */
+
+.formulario-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.formulario-campo label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.formulario-campo input,
+.formulario-campo textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  border: 1px solid var(
+    --ion-color-step-300,
+    #b0b0b0
+  );
+
+  border-radius: 10px;
+
+  background: var(
+    --ion-item-background,
+    var(--ion-background-color)
+  );
+
+  color: var(--ion-text-color);
+
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.formulario-campo input {
+  min-height: 46px;
+}
+
+.formulario-campo textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.formulario-campo input::placeholder,
+.formulario-campo textarea::placeholder {
+  color: var(--ion-color-medium);
+  opacity: 0.8;
+}
+
+.formulario-campo input:focus,
+.formulario-campo textarea:focus {
+  outline: none;
+  border-color: var(--ion-color-primary);
+
+  box-shadow: 0 0 0 2px
+    rgba(var(--ion-color-primary-rgb), 0.16);
+}
+
+.formulario-campo input:disabled,
+.formulario-campo textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.formulario-campo small {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+}
+
+/* ==========================================
+   TEXTOS DE AYUDA
+========================================== */
+
+.formulario-ayuda {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   SELECCIÓN DE ARCHIVOS
+========================================== */
+
+.formulario-campo input[type="file"] {
+  height: auto;
+  min-height: 48px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.formulario-campo input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 12px;
+
+  border: 1px solid var(--ion-color-primary);
+  border-radius: 8px;
+
+  background: transparent;
+  color: var(--ion-color-primary);
+
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================
+   ARCHIVO SELECCIONADO
+========================================== */
+
+.archivo-seleccionado {
+  padding: 14px;
+
+  border: 1px solid var(
+    --ion-color-step-250,
+    #c0c0c0
+  );
+
+  border-radius: 10px;
+
+  background: rgba(
+    var(--ion-color-primary-rgb),
+    0.06
+  );
+}
+
+.archivo-seleccionado p {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+  color: var(--ion-text-color);
+}
+
+.archivo-seleccionado ion-button {
+  margin: 0;
+  text-transform: none;
+}
+
+/* ==========================================
+   ACCIONES DEL FORMULARIO
+========================================== */
+
+.formulario-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.formulario-acciones ion-button {
+  margin: 0;
+  min-width: 140px;
+  min-height: 44px;
+  font-weight: 600;
+  text-transform: none;
+  --border-radius: 9px;
+}
+
+/* ==========================================
+   MENSAJES DE ESTADO
+========================================== */
+
+.mensaje-error {
+  margin: 12px 0;
+  padding: 12px 14px;
+
+  border-left: 4px solid var(--ion-color-danger);
+  border-radius: 8px;
+
+  background: rgba(
+    var(--ion-color-danger-rgb),
+    0.08
+  );
+
+  color: var(--ion-text-color);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.mensaje-exito {
+  margin: 14px 0;
+  padding: 12px 14px;
+
+  border-left: 4px solid var(--ion-color-success);
+  border-radius: 8px;
+
+  background: rgba(
+    var(--ion-color-success-rgb),
+    0.08
+  );
+
+  color: var(--ion-text-color);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.mensaje-calendario {
+  margin: 14px 0;
+  color: var(--ion-color-medium);
   font-size: 0.9rem;
 }
 
+/* ==========================================
+   HISTORIAL DE TRÁMITES
+========================================== */
+
+.tramite-historial-card {
+  margin-bottom: 16px;
+}
+
+.tramite-historial-card ion-card-content > p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+  color: var(--ion-text-color);
+}
+
+.tramite-historial-card strong {
+  font-weight: 700;
+}
+
+.tramite-descripcion {
+  margin-top: 16px;
+  padding: 14px;
+
+  border-radius: 10px;
+
+  background: rgba(
+    var(--ion-color-medium-rgb),
+    0.08
+  );
+}
+
+.tramite-descripcion p {
+  margin: 0 0 8px;
+  color: var(--ion-text-color);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.tramite-descripcion p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   JUSTIFICATIVOS DEL HISTORIAL
+========================================== */
+
+.tramite-adjunto {
+  margin-top: 16px;
+  padding: 14px;
+
+  border: 1px solid var(
+    --ion-color-step-250,
+    #c0c0c0
+  );
+
+  border-radius: 10px;
+}
+
+.tramite-adjunto p {
+  margin: 0 0 10px;
+  overflow-wrap: anywhere;
+  color: var(--ion-text-color);
+}
+
+.tramite-adjunto ion-button {
+  margin: 0;
+  text-transform: none;
+  --border-radius: 8px;
+}
+
+/* ==========================================
+   ESTADO DE LOS TRÁMITES
+========================================== */
+
+.tramite-estado {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+}
+
+/* ==========================================
+   SIN TRÁMITES REGISTRADOS
+========================================== */
+
+.sin-tramites-card {
+  text-align: center;
+}
+
+.sin-tramites-card ion-card-content {
+  padding: 28px 20px;
+}
+
+.sin-tramites-card p {
+  margin: 8px 0;
+  color: var(--ion-color-medium);
+  line-height: 1.6;
+}
+
+/* ==========================================
+   NOTA FINAL
+========================================== */
+
+.tramites-nota {
+  margin: 24px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ion-color-medium);
+}
+
+/* ==========================================
+   RESPONSIVE: CELULARES
+========================================== */
+
 @media (max-width: 600px) {
+
   .tramites-container {
     padding: 16px;
-  }
-
-  .tramites-actions {
-    grid-template-columns: 1fr;
+    padding-bottom: 36px;
   }
 
   .header-section h1 {
     font-size: 1.7rem;
   }
+
+  .tramites-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .tramite-formulario {
+    gap: 18px;
+  }
+
+  .formulario-acciones {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .formulario-acciones ion-button {
+    width: 100%;
+    margin: 0;
+  }
+
+  ion-card-title {
+    font-size: 1.05rem;
+  }
+
 }
