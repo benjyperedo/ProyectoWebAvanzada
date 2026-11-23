@@ -28,7 +28,7 @@ variable "dns_label" {
 variable "vm_size" {
   description = "Tamano de la maquina virtual. Verificar precio y disponibilidad en la region elegida."
   type        = string
-  default     = "Standard_D2s_v3"
+  default     = "Standard_B2ms"
 }
 
 variable "admin_username" {
