@@ -10,7 +10,12 @@ async function bootstrap() {
   app.use(requestContextMiddleware);
 
   app.enableCors({
-    origin: 'http://localhost:8080',
+  origin: [
+    'http://localhost:8080',
+    'http://localhost',
+    'https://localhost',
+    'capacitor://localhost',
+    ],
     exposedHeaders: ['X-Request-Id'],
   });
 
