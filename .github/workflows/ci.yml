@@ -221,6 +221,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_VAR_location: ${{ vars.AZURE_LOCATION }}
       TF_VAR_dns_label: ${{ vars.AZURE_DNS_LABEL }}
+      TF_VAR_vm_size: ${{ vars.VM_SIZE || 'Standard_D2s_v5' }}
       TF_VAR_ssh_public_key: ${{ vars.SSH_PUBLIC_KEY }}
       TFSTATE_RESOURCE_GROUP: ${{ vars.TFSTATE_RESOURCE_GROUP }}
       TFSTATE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_STORAGE_ACCOUNT }}
