@@ -1,3 +1,4 @@
+
 <ion-header>
   <ion-toolbar>
     <ion-title>Trámites académicos</ion-title>
@@ -8,70 +9,600 @@
 
   <div class="tramites-container">
 
+    <!-- ====================================== -->
+    <!-- ENCABEZADO PRINCIPAL -->
+    <!-- ====================================== -->
+
     <section class="header-section">
+
       <h1>Gestiones académicas</h1>
+
       <p>
-        Realiza y revisa distintas solicitudes relacionadas con tu vida académica.
+        Realiza y revisa distintas solicitudes
+        relacionadas con tu vida académica.
       </p>
+
     </section>
+
+    <!-- ====================================== -->
+    <!-- NUEVO TRÁMITE -->
+    <!-- ====================================== -->
 
     <h2>Nuevo trámite</h2>
 
     <div class="tramites-actions">
 
-      <ion-button expand="block">
+      <ion-button
+        expand="block"
+        (click)="abrirFormulario('ABSENCE_JUSTIFICATION')">
+
         Justificar inasistencia
+
       </ion-button>
 
-      <ion-button expand="block">
+      <ion-button
+        expand="block"
+        (click)="abrirFormulario('OVERCAPACITY')">
+
         Solicitar sobrecupo
+
       </ion-button>
 
-      <ion-button expand="block">
+      <ion-button
+        expand="block"
+        (click)="abrirFormulario('ENROLLMENT_PROBLEM')">
+
         Problema de inscripción
+
       </ion-button>
 
-      <ion-button expand="block">
+      <ion-button
+        expand="block"
+        (click)="abrirFormulario('OTHER')">
+
         Otra solicitud
+
       </ion-button>
 
     </div>
 
+    <!-- ====================================== -->
+    <!-- FORMULARIO DE TRÁMITES -->
+    <!-- ====================================== -->
+
+    @if (formularioAbierto()) {
+
+      <ion-card class="tramite-formulario-card">
+
+        <ion-card-header>
+
+          <ion-card-title>
+            {{ tituloFormulario() }}
+          </ion-card-title>
+
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <div class="tramite-formulario">
+
+            <p class="formulario-ayuda">
+              Completa los siguientes campos
+              para registrar tu solicitud académica.
+            </p>
+
+            <!-- ================================== -->
+            <!-- CORREO DEL DESTINATARIO -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label for="tramite-destinatario">
+
+                @if (esInasistencia()) {
+                  Correo del profesor
+                } @else {
+                  Correo del destinatario
+                }
+
+              </label>
+
+              <input
+                id="tramite-destinatario"
+                type="email"
+                maxlength="255"
+                autocomplete="off"
+                placeholder="Ej. profesor@universidad.cl"
+                [value]="destinatario()"
+                [disabled]="guardandoTramite()"
+                (input)="cambiarDestinatario($any($event.target).value)"/>
+
+              <small>
+                Indica a quién va dirigida
+                tu solicitud.
+              </small>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- ASIGNATURA -->
+            <!-- ================================== -->
+
+            @if (requiereAsignatura()) {
+
+              <div class="formulario-campo">
+
+                <label for="tramite-asignatura">
+
+                  @if (esInasistencia()) {
+                    Asignatura o clase
+                  } @else {
+                    Asignatura
+                  }
+
+                </label>
+
+                <input
+                  id="tramite-asignatura"
+                  type="text"
+                  maxlength="150"
+                  placeholder="Ej. Bases de Datos"
+                  [value]="asignatura()"
+                  [disabled]="guardandoTramite()"
+                  (input)="cambiarAsignatura($any($event.target).value)"/>
+
+              </div>
+
+            }
+
+            <!-- ================================== -->
+            <!-- JUSTIFICACIÓN DE INASISTENCIA -->
+            <!-- ================================== -->
+
+            @if (esInasistencia()) {
+
+              <!-- FECHA DE INASISTENCIA -->
+
+              <div class="formulario-campo">
+
+                <label for="tramite-fecha">
+                  Fecha de inasistencia
+                </label>
+
+                <input
+                  id="tramite-fecha"
+                  type="date"
+                  [value]="fechaInasistencia()"
+                  [disabled]="guardandoTramite()"
+                  (change)="cambiarFechaInasistencia($any($event.target).value)"/>
+
+              </div>
+
+              <!-- JUSTIFICATIVO MÉDICO -->
+
+              <div class="formulario-campo">
+
+                <label for="tramite-archivo">
+                  Justificativo médico
+                </label>
+
+                <p class="formulario-ayuda">
+                  Puedes adjuntar un certificado
+                  médico en formato PDF, PNG o JPG.
+                  Tamaño máximo: 5 MB.
+                </p>
+
+                @if (!archivoAdjunto()) {
+
+                  <input
+                    id="tramite-archivo"
+                    type="file"
+                    accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+                    [disabled]="guardandoTramite()"
+                    (change)="seleccionarArchivo($event)"/>
+
+                } @else {
+
+                  <div class="archivo-seleccionado">
+
+                    <p>
+                      <strong>Archivo seleccionado:</strong>
+                      {{ archivoAdjunto()?.name }}
+                    </p>
+
+                    <ion-button
+                      size="small"
+                      fill="outline"
+                      color="medium"
+                      [disabled]="guardandoTramite()"
+                      (click)="quitarArchivo()">
+
+                      Quitar archivo
+
+                    </ion-button>
+
+                  </div>
+
+                }
+
+              </div>
+
+            }
+
+            <!-- ================================== -->
+            <!-- OTRA SOLICITUD -->
+            <!-- ================================== -->
+
+            @if (esOtraSolicitud()) {
+
+              <div class="formulario-campo">
+
+                <label for="tramite-asunto">
+                  Asunto de la solicitud
+                </label>
+
+                <input
+                  id="tramite-asunto"
+                  type="text"
+                  maxlength="150"
+                  placeholder="Ej. Solicitud de certificado"
+                  [value]="asunto()"
+                  [disabled]="guardandoTramite()"
+                  (input)="cambiarAsunto($any($event.target).value)"/>
+
+              </div>
+
+            }
+
+            <!-- ================================== -->
+            <!-- EXPLICACIÓN O JUSTIFICACIÓN -->
+            <!-- ================================== -->
+
+            <div class="formulario-campo">
+
+              <label for="tramite-descripcion">
+                {{ etiquetaDescripcion() }}
+              </label>
+
+              <textarea
+                id="tramite-descripcion"
+                rows="6"
+                maxlength="4000"
+                [value]="descripcion()"
+                [disabled]="guardandoTramite()"
+                (input)="cambiarDescripcion($any($event.target).value)"
+
+                placeholder="Escribe aquí los detalles de tu solicitud...">
+              </textarea>
+
+              <small>
+                Máximo 4000 caracteres.
+              </small>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- ERRORES DEL FORMULARIO -->
+            <!-- ================================== -->
+
+            @if (errorFormulario()) {
+
+              <p
+                class="mensaje-error"
+                role="alert">
+
+                {{ errorFormulario() }}
+
+              </p>
+
+            }
+
+            <!-- ================================== -->
+            <!-- INFORMACIÓN DEL REGISTRO -->
+            <!-- ================================== -->
+
+            <p class="formulario-ayuda">
+              Al guardar, tu solicitud quedará
+              registrada en LISTOCO.
+              No se enviará automáticamente
+              al correo indicado.
+            </p>
+
+            <!-- ================================== -->
+            <!-- BOTONES DEL FORMULARIO -->
+            <!-- ================================== -->
+
+            <div class="formulario-acciones">
+
+              <ion-button
+                fill="outline"
+                color="medium"
+                [disabled]="guardandoTramite()"
+                (click)="cerrarFormulario()">
+
+                Cancelar
+
+              </ion-button>
+
+              <ion-button
+                [disabled]="guardandoTramite()"
+                (click)="guardarTramite()">
+
+                @if (guardandoTramite()) {
+
+                  Guardando...
+
+                } @else {
+
+                  Registrar trámite
+
+                }
+
+              </ion-button>
+
+            </div>
+
+          </div>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- MIS TRÁMITES -->
+    <!-- ====================================== -->
+
     <h2>Mis trámites</h2>
 
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          Justificación de inasistencia
-        </ion-card-title>
-      </ion-card-header>
+    <!-- ====================================== -->
+    <!-- MENSAJE DE CONFIRMACIÓN -->
+    <!-- ====================================== -->
 
-      <ion-card-content>
-        <p><strong>Asignatura:</strong> Base de Datos</p>
-        <p><strong>Fecha:</strong> 22/09/2026 - 09:30</p>
+    @if (mensajeExito()) {
 
-        <ion-badge color="warning">
-          En revisión
-        </ion-badge>
-      </ion-card-content>
-    </ion-card>
+      <p
+        class="mensaje-exito"
+        role="status">
 
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          Solicitud de sobrecupo
-        </ion-card-title>
-      </ion-card-header>
+        {{ mensajeExito() }}
 
-      <ion-card-content>
-        <p><strong>Asignatura:</strong> Sistemas Operativos</p>
-        <p><strong>Fecha:</strong> 18/09/2026</p>
+      </p>
 
-        <ion-badge color="medium">
-          Pendiente
-        </ion-badge>
-      </ion-card-content>
-    </ion-card>
+    }
+
+    <!-- ====================================== -->
+    <!-- ESTADO DE CARGA -->
+    <!-- ====================================== -->
+
+    @if (cargandoTramites()) {
+
+      <p
+        class="mensaje-calendario"
+        role="status">
+
+        Cargando tus trámites...
+
+      </p>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- ERROR AL CONSULTAR TRÁMITES -->
+    <!-- ====================================== -->
+
+    @if (errorTramites()) {
+
+      <p
+        class="mensaje-error"
+        role="alert">
+
+        {{ errorTramites() }}
+
+      </p>
+
+      <ion-button
+        fill="outline"
+        (click)="cargarTramites()">
+
+        Reintentar
+
+      </ion-button>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- ERROR AL DESCARGAR ADJUNTOS -->
+    <!-- ====================================== -->
+
+    @if (errorDescarga()) {
+
+      <p
+        class="mensaje-error"
+        role="alert">
+
+        {{ errorDescarga() }}
+
+      </p>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- SIN TRÁMITES REGISTRADOS -->
+    <!-- ====================================== -->
+
+    @if (
+      !cargandoTramites() &&
+      !errorTramites() &&
+      tramites().length === 0
+    ) {
+
+      <ion-card class="sin-tramites-card">
+
+        <ion-card-content>
+
+          <p>
+            Todavía no tienes trámites registrados.
+          </p>
+
+          <p>
+            Cuando registres una solicitud académica,
+            aparecerá aquí automáticamente.
+          </p>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- HISTORIAL REAL DE TRÁMITES -->
+    <!-- ====================================== -->
+
+    @for (tramite of tramites(); track tramite.id) {
+
+      <ion-card class="tramite-historial-card">
+
+        <!-- TÍTULO DEL TRÁMITE -->
+
+        <ion-card-header>
+
+          <ion-card-title>
+            {{ nombreTipo(tramite.type) }}
+          </ion-card-title>
+
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <!-- ASIGNATURA -->
+
+          @if (tramite.courseName) {
+
+            <p>
+              <strong>Asignatura:</strong>
+              {{ tramite.courseName }}
+            </p>
+
+          }
+
+          <!-- ASUNTO -->
+
+          @if (tramite.subject) {
+
+            <p>
+              <strong>Asunto:</strong>
+              {{ tramite.subject }}
+            </p>
+
+          }
+
+          <!-- FECHA DE INASISTENCIA -->
+
+          @if (tramite.absenceDate) {
+
+            <p>
+              <strong>Fecha de inasistencia:</strong>
+              {{ formatearFechaInasistencia(tramite.absenceDate) }}
+            </p>
+
+          }
+
+          <!-- CORREO DEL DESTINATARIO -->
+
+          <p>
+            <strong>Destinatario:</strong>
+            {{ tramite.recipientEmail }}
+          </p>
+
+          <!-- FECHA DE REGISTRO -->
+
+          <p>
+            <strong>Fecha de registro:</strong>
+            {{ formatearFechaCreacion(tramite.createdAt) }}
+          </p>
+
+          <!-- DESCRIPCIÓN -->
+
+          <div class="tramite-descripcion">
+
+            <p>
+              <strong>Descripción:</strong>
+            </p>
+
+            <p>
+              {{ tramite.description }}
+            </p>
+
+          </div>
+
+          <!-- ================================== -->
+          <!-- ARCHIVO ADJUNTO -->
+          <!-- ================================== -->
+
+          @if (tramite.attachment) {
+
+            <div class="tramite-adjunto">
+
+              <p>
+                <strong>Justificativo:</strong>
+                {{ tramite.attachment.fileName }}
+              </p>
+
+              <ion-button
+                size="small"
+                fill="outline"
+                [disabled]="descargandoId() !== null"
+                (click)="descargarAdjunto(tramite)">
+
+                @if (descargandoId() === tramite.id) {
+
+                  Descargando...
+
+                } @else {
+
+                  Descargar justificativo
+
+                }
+
+              </ion-button>
+
+            </div>
+
+          }
+
+          <!-- ================================== -->
+          <!-- ESTADO DE LA SOLICITUD -->
+          <!-- ================================== -->
+
+          <div class="tramite-estado">
+
+            <ion-badge color="medium">
+              {{ nombreEstado() }}
+            </ion-badge>
+
+          </div>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    }
+
+    <!-- ====================================== -->
+    <!-- NOTA FINAL -->
+    <!-- ====================================== -->
+
+    <p class="tramites-nota">
+
+      Los trámites registrados se guardan en tu
+      historial personal de LISTOCO.
+      Su registro no implica que hayan sido
+      enviados ni aprobados por la universidad.
+
+    </p>
 
   </div>
 

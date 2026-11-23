@@ -1,68 +1,565 @@
+
+:host {
+  --azul: #3b82f6;
+  --verde: #22a06b;
+
+  // Bordes adaptables al tema
+  --borde: rgba(148, 163, 184, 0.22);
+
+  // Fondos neutros para modo claro y oscuro
+  --suave: rgba(148, 163, 184, 0.10);
+  --fondo-evento: rgba(148, 163, 184, 0.06);
+
+  // Colores de texto
+  --texto: var(--ion-text-color, #1f2937);
+  --muted: var(--ion-color-medium, #94a3b8);
+
+  display: block;
+}
+
+// ==========================================
+// ESTRUCTURA PRINCIPAL
+// ==========================================
+
 .calendario-container {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px;
+  max-width: 1050px;
+  margin: auto;
+  padding: 24px 20px 48px;
 }
 
-.header-section {
+.calendario-intro {
   margin-bottom: 20px;
-}
 
-.header-section h1 {
-  margin-bottom: 6px;
-  font-size: 2rem;
-  font-weight: 700;
-}
+  h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: var(--texto);
+  }
 
-.header-section p {
-  margin: 0;
-  color: var(--ion-color-medium);
+  p {
+    margin: 0;
+    color: var(--muted);
+  }
 }
 
 ion-card {
-  margin-left: 0;
-  margin-right: 0;
+  margin: 0 0 20px;
+  border: 1px solid var(--borde);
+  border-radius: 16px;
 }
 
-.event-item {
+ion-card-header {
+  padding: 18px 20px 8px;
+}
+
+ion-card-title {
+  font-size: 19px;
+}
+
+ion-card-content {
+  padding: 12px 20px 20px;
+}
+
+// ==========================================
+// NAVEGACIÓN Y LEYENDA
+// ==========================================
+
+.calendario-navegacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.titulo-mes {
+  min-width: 200px;
+  margin: 0;
+  text-align: center;
+  text-transform: capitalize;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.calendario-hoy,
+.calendario-leyenda {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.calendario-leyenda {
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.leyenda-item,
+.evento-categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.punto-universidad,
+.punto-personal,
+.punto-evento {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.punto-universidad {
+  background: var(--azul);
+}
+
+.punto-personal {
+  background: var(--verde);
+}
+
+// ==========================================
+// CUADRÍCULA DEL CALENDARIO
+// ==========================================
+
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calendario-nombre-dia {
+  padding: 9px 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+// ==========================================
+// DÍAS DEL CALENDARIO
+// CORRECCIÓN PRINCIPAL DE CONTRASTE
+// ==========================================
+
+.calendario-dia {
+  appearance: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  min-width: 0;
+  min-height: 70px;
+  padding: 9px 3px;
+
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+
+  // Antes el fondo podía quedar blanco.
+  // Ahora se adapta a temas claros y oscuros.
+  background: var(--suave);
+
+  // Mantener siempre el contraste con el tema.
+  color: var(--texto);
+
+  font: inherit;
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+// Día al pasar el mouse
+.calendario-dia:hover {
+  border-color: var(--azul);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+// Día seleccionado
+.calendario-dia.dia-seleccionado {
+  border: 2px solid var(--azul);
+  background: rgba(59, 130, 246, 0.16);
+  color: var(--texto);
+}
+
+// Accesibilidad con teclado
+.calendario-dia:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+// Días que pertenecen a otro mes
+.calendario-dia.dia-fuera-mes {
+  opacity: 0.45;
+}
+
+// Número de cada día
+.dia-numero {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  // Asegurar que herede el texto visible
+  color: inherit;
+}
+
+// Día actual
+.calendario-dia.dia-actual .dia-numero {
+  background: var(--azul);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+// ==========================================
+// INDICADORES DE EVENTOS
+// ==========================================
+
+.dia-indicadores {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.dia-indicadores .punto-evento {
+  width: 7px;
+  height: 7px;
+}
+
+.dia-mas-eventos {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+// ==========================================
+// EVENTOS DEL DÍA SELECCIONADO
+// ==========================================
+
+.eventos-dia-encabezado {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--ion-color-light);
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
-.event-item:last-child {
-  border-bottom: none;
+.eventos-dia-info h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  text-transform: capitalize;
+  color: var(--texto);
 }
 
-.event-item h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
+.sin-eventos {
+  padding: 22px;
+  text-align: center;
+  border: 1px dashed var(--borde);
+  border-radius: 12px;
+  background: var(--fondo-evento);
 }
 
-.event-item p {
+.sin-eventos p {
+  color: var(--muted);
+}
+
+// ==========================================
+// TARJETAS DE EVENTOS
+// ==========================================
+
+.eventos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.evento-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+
+  background: var(--fondo-evento);
+  color: var(--texto);
+}
+
+.evento-universidad {
+  border-left: 3px solid var(--azul);
+}
+
+.evento-personal {
+  border-left: 3px solid var(--verde);
+}
+
+.evento-barra-color {
+  width: 5px;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+
+.evento-contenido {
+  flex: 1;
+  min-width: 0;
+}
+
+.evento-contenido h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+
+.evento-detalles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.evento-recordatorio {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.evento-acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.evento-acciones ion-button {
   margin: 0;
-  color: var(--ion-color-medium);
+  text-transform: none;
 }
 
-.add-event-button {
-  margin-top: 20px;
+// ==========================================
+// FORMULARIO DE EVENTOS
+// ==========================================
+
+.evento-formulario,
+.formulario-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
+
+.formulario-campo {
+  gap: 8px;
+}
+
+.formulario-campo > label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.formulario-campo > input,
+.formulario-campo select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+
+  // Evitar inputs blancos con texto blanco
+  background: var(--suave);
+  color: var(--texto);
+
+  font: inherit;
+  color-scheme: inherit;
+}
+
+.formulario-campo > input:focus,
+.formulario-campo select:focus {
+  outline: 2px solid var(--azul);
+}
+
+.formulario-campo small,
+.formulario-ayuda {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+// ==========================================
+// CATEGORÍAS DE EVENTOS
+// ==========================================
+
+.categoria-opciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.categoria-boton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+
+  padding: 12px;
+  border: 2px solid var(--borde);
+  border-radius: 12px;
+
+  background: var(--suave);
+  color: var(--texto);
+
+  font: inherit;
+  cursor: pointer;
+}
+
+.categoria-universidad.categoria-activa {
+  border-color: var(--azul);
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.categoria-personal.categoria-activa {
+  border-color: var(--verde);
+  background: rgba(34, 160, 107, 0.15);
+}
+
+// ==========================================
+// RECORDATORIOS
+// ==========================================
+
+.recordatorio-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--texto);
+}
+
+.recordatorio-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--azul);
+}
+
+.recordatorio-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formulario-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.formulario-acciones ion-button {
+  margin: 0;
+  text-transform: none;
+}
+
+// ==========================================
+// MENSAJES
+// ==========================================
+
+.mensaje-calendario,
+.mensaje-error,
+.mensaje-exito {
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.mensaje-calendario {
+  background: var(--suave);
+  color: var(--muted);
+}
+
+.mensaje-error {
+  color: var(--ion-color-danger);
+  background: rgba(220, 38, 38, 0.10);
+}
+
+.mensaje-exito {
+  color: var(--ion-color-success);
+  background: rgba(34, 160, 107, 0.10);
+}
+
+.calendario-nota {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+// ==========================================
+// DISEÑO RESPONSIVE
+// ==========================================
 
 @media (max-width: 600px) {
   .calendario-container {
-    padding: 16px;
+    padding: 16px 10px 32px;
   }
 
-  .header-section h1 {
-    font-size: 1.7rem;
+  .calendario-intro h1 {
+    font-size: 23px;
   }
 
-  .event-item {
+  ion-card-header {
+    padding: 16px 14px 8px;
+  }
+
+  ion-card-content {
+    padding: 10px 12px 16px;
+  }
+
+  .titulo-mes {
+    min-width: 0;
+    flex: 1;
+    font-size: 18px;
+  }
+
+  .calendario-grid {
+    gap: 3px;
+  }
+
+  .calendario-nombre-dia {
+    font-size: 11px;
+  }
+
+  .calendario-dia {
+    min-height: 54px;
+    padding: 7px 1px;
+    gap: 3px;
+  }
+
+  .dia-numero {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+  }
+
+  .dia-indicadores .punto-evento {
+    width: 5px;
+    height: 5px;
+  }
+
+  .eventos-dia-encabezado {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .categoria-opciones {
+    gap: 8px;
   }
 }

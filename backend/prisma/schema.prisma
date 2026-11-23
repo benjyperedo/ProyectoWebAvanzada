@@ -8,6 +8,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// ==========================================
+// ENUMERACIONES
+// ==========================================
+
 enum Role {
   STUDENT
   ADMIN
@@ -24,6 +28,32 @@ enum IngestionStatus {
   FAILED
 }
 
+enum CalendarEventCategory {
+  UNIVERSITY
+  PERSONAL
+}
+
+// ==========================================
+// TIPOS DE TRÁMITES ACADÉMICOS
+// ==========================================
+
+enum AcademicRequestType {
+  ABSENCE_JUSTIFICATION
+  OVERCAPACITY
+  ENROLLMENT_PROBLEM
+  OTHER
+}
+
+// Por ahora solo registramos solicitudes.
+// No hay una aprobación administrativa automática.
+enum AcademicRequestStatus {
+  REGISTERED
+}
+
+// ==========================================
+// USUARIOS
+// ==========================================
+
 model User {
   id                 Int                    @id @default(autoincrement())
   email              String                 @unique
@@ -35,10 +65,21 @@ model User {
   ingestionRuns      IngestionRun[]
   academicProgress   StudentCourseProgress[]
   schedulePreference SchedulePreference?
+
+  // Horarios guardados por el estudiante
+  savedSchedules     SavedSchedule[]
+
+  // Eventos del calendario
+  calendarEvents     CalendarEvent[]
+
+  // Solicitudes académicas del estudiante
+  academicRequests   AcademicRequest[]
 }
 
-// Fuente web externa de la que se obtienen datos
-// (por ejemplo, el PDF de la PUCV).
+// ==========================================
+// FUENTES DE DATOS
+// ==========================================
+
 model DataSource {
   id        Int            @id @default(autoincrement())
   key       String         @unique
@@ -49,22 +90,22 @@ model DataSource {
   courses   Course[]
 }
 
-// Una ejecución de la ingesta: procedencia del documento,
-// métricas de calidad y resultado de la persistencia.
-// Permite auditar y comparar corridas.
+// ==========================================
+// EJECUCIONES DE INGESTA
+// ==========================================
+
 model IngestionRun {
   id            Int             @id @default(autoincrement())
   sourceId      Int
-  source        DataSource      @relation(fields: [sourceId], references: [id])
+  source        DataSource       @relation(fields: [sourceId], references: [id])
   triggeredById Int?
-  triggeredBy   User?           @relation(fields: [triggeredById], references: [id])
+  triggeredBy   User?            @relation(fields: [triggeredById], references: [id])
   status        IngestionStatus
   requestId     String?
   startedAt     DateTime        @default(now())
   finishedAt    DateTime?
   durationMs    Int?
 
-  // Procedencia del documento
   sha256           String?
   contentLength    Int?
   resolution       String?
@@ -72,7 +113,6 @@ model IngestionRun {
   changed          Boolean?
   extractorVersion String?
 
-  // Métricas de calidad de los datos recuperados
   candidates        Int?
   validCount        Int?
   rejectedCount     Int?
@@ -82,7 +122,6 @@ model IngestionRun {
   coverage          Float?
   validRatio        Float?
 
-  // Resultado de la persistencia
   createdCount     Int?
   updatedCount     Int?
   deactivatedCount Int?
@@ -97,20 +136,19 @@ model IngestionRun {
   @@index([status])
 }
 
+// ==========================================
+// ASIGNATURAS
+// ==========================================
+
 model Course {
   id                Int           @id @default(autoincrement())
   code              String        @unique
   name              String
-
-  // La fuente web no publica créditos:
-  // se completan después con la fuente curada.
   credits           Int?
   suggestedSemester Int
   category          String?
   active            Boolean       @default(true)
 
-  // Procedencia: de qué fuente y de qué corrida
-  // viene el dato, y cuándo se vio por última vez.
   sourceId          Int?
   source            DataSource?   @relation(fields: [sourceId], references: [id])
   lastRunId         Int?
@@ -120,11 +158,16 @@ model Course {
   updatedAt         DateTime      @updatedAt
 
   academicProgress StudentCourseProgress[]
+  sections         CourseSection[]
 
   @@index([suggestedSemester])
   @@index([category])
   @@index([sourceId, active])
 }
+
+// ==========================================
+// PROGRESO ACADÉMICO
+// ==========================================
 
 model StudentCourseProgress {
   userId    Int
@@ -138,6 +181,10 @@ model StudentCourseProgress {
   @@id([userId, courseId])
   @@index([courseId])
 }
+
+// ==========================================
+// PREFERENCIAS DE HORARIOS
+// ==========================================
 
 enum PreferredShift {
   MORNING
@@ -163,4 +210,159 @@ model SchedulePreference {
   updatedAt        DateTime       @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// SECCIONES DE ASIGNATURAS
+// ==========================================
+
+model CourseSection {
+  id       Int     @id @default(autoincrement())
+  courseId Int
+  code     String
+  year     Int
+  semester Int
+  isDemo   Boolean @default(true)
+  active   Boolean @default(true)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  meetings ClassMeeting[]
+
+  savedScheduleSections SavedScheduleSection[]
+
+  @@unique([courseId, code, year, semester])
+  @@index([year, semester])
+}
+
+// ==========================================
+// BLOQUES HORARIOS
+// ==========================================
+
+model ClassMeeting {
+  id        Int     @id @default(autoincrement())
+  sectionId Int
+  day       Weekday
+  startTime String
+  endTime   String
+  type      String?
+
+  section CourseSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+}
+
+// ==========================================
+// HORARIOS GUARDADOS
+// ==========================================
+
+model SavedSchedule {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  year      Int
+  semester  Int
+  isDemo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sections SavedScheduleSection[]
+
+  @@unique([userId, year, semester, isDemo])
+  @@index([year, semester])
+}
+
+// ==========================================
+// SECCIONES DEL HORARIO GUARDADO
+// ==========================================
+
+model SavedScheduleSection {
+  savedScheduleId Int
+  sectionId       Int
+
+  savedSchedule SavedSchedule @relation(fields: [savedScheduleId], references: [id], onDelete: Cascade)
+
+  section CourseSection @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+
+  @@id([savedScheduleId, sectionId])
+  @@index([sectionId])
+}
+
+// ==========================================
+// EVENTOS DEL CALENDARIO
+// ==========================================
+
+model CalendarEvent {
+  id                    Int                   @id @default(autoincrement())
+  userId                Int
+  title                 String                @db.VarChar(150)
+  eventDate             DateTime              @db.Date
+  startTime             String?
+  category              CalendarEventCategory
+  reminderMinutesBefore Int?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, eventDate])
+}
+
+// ==========================================
+// SOLICITUDES ACADÉMICAS
+// ==========================================
+
+model AcademicRequest {
+  id        Int                   @id @default(autoincrement())
+  userId    Int
+  type      AcademicRequestType
+  status    AcademicRequestStatus @default(REGISTERED)
+
+  // Correo del profesor o destinatario
+  recipientEmail String @db.VarChar(255)
+
+  // Asignatura involucrada, si corresponde
+  courseName String? @db.VarChar(150)
+
+  // Fecha de inasistencia, si corresponde
+  absenceDate DateTime? @db.Date
+
+  // Asunto para solicitudes generales
+  subject String? @db.VarChar(150)
+
+  // Explicación o justificación del estudiante
+  description String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Estudiante propietario
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Archivo adjunto opcional
+  attachment AcademicRequestAttachment?
+
+  // Historial de solicitudes por estudiante
+  @@index([userId, createdAt])
+}
+
+// ==========================================
+// ARCHIVOS ADJUNTOS A SOLICITUDES
+// ==========================================
+
+model AcademicRequestAttachment {
+  // Solo un archivo adjunto por solicitud
+  requestId Int @id
+
+  // Información del archivo
+  fileName  String @db.VarChar(255)
+  mimeType  String @db.VarChar(100)
+  sizeBytes Int
+
+  // Contenido almacenado en PostgreSQL
+  content Bytes @db.ByteA
+
+  // Solicitud a la que pertenece
+  request AcademicRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
