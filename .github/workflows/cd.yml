@@ -254,6 +254,14 @@ jobs:
           echo "::error::https://${HOST}/api/health no respondio 200. La version quedo desplegada y sana por dentro: revisar DNS, certificado y puertos 80/443."
           exit 1
 
+      - name: Pruebas posteriores al despliegue (humo del flujo completo)
+        if: steps.cfg.outputs.enabled == 'true'
+        env:
+          HOST: ${{ steps.cfg.outputs.host }}
+        run: |
+          chmod +x scripts/smoke-test.sh
+          ./scripts/smoke-test.sh "https://${HOST}"
+
       - name: Resumen del despliegue
         if: steps.cfg.outputs.enabled == 'true'
         env:
