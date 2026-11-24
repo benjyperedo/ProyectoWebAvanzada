@@ -316,7 +316,8 @@ describe.skipIf(!isDisposable)('Flujo completo: cliente → NestJS → Python �
 
     it('el estudiante guarda su avance y solo él lo ve', async () => {
       await request(server()).post('/ingestion/curriculum').set(auth(adminToken)).expect(201);
-      const course = await prisma.course.findFirstOrThrow({ where: { code: 'algebra-lineal' } });
+      // 'calculo-i' no tiene prerrequisitos, así que se puede aprobar directamente.
+      const course = await prisma.course.findFirstOrThrow({ where: { code: 'calculo-i' } });
 
       await request(server())
         .put(`/academic-progress/${course.id}`)

@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PREREQUISITOS } from '../academic-progress/prerequisites.js';
 
 import {
-  generarHorarios,
+  buscarHorarios,
   hayChoque,
   type PreferenciasHorario,
   type SeccionHorario,
@@ -201,8 +201,8 @@ export class ScheduleGeneratorService {
       );
     }
 
-    // 9. Ejecutar el algoritmo
-    const recomendaciones = generarHorarios(
+        // 9. Ejecutar el algoritmo
+    const { recommendations, truncated } = buscarHorarios(
       opcionesPorRamo,
       preferencias,
       10,
@@ -215,11 +215,14 @@ export class ScheduleGeneratorService {
         isDemo: true,
       },
       selectedCourseIds: ids,
-      totalRecommendations: recomendaciones.length,
-      recommendations: recomendaciones,
+      totalRecommendations: recommendations.length,
+      recommendations,
+      truncated,
       message:
-        recomendaciones.length > 0
-          ? 'Horarios generados correctamente.'
+        recommendations.length > 0
+          ? truncated
+            ? 'Se muestran los mejores horarios encontrados. Hay tantas combinaciones que no se revisaron todas; prueba con menos ramos para ver más.'
+            : 'Horarios generados correctamente.'
           : 'No se encontraron combinaciones sin choques.',
     };
   }

@@ -151,3 +151,30 @@ export const PREREQUISITOS: Record<string, string[]> = {
   'ingles-3': ['ingles-2'],
   'ingles-4': ['ingles-3'],
 };
+
+/**
+ * Devuelve los prerrequisitos de una asignatura que NO están aprobados.
+ * Función pura: no usa base de datos, por eso es fácil de probar.
+ */
+export function prerrequisitosFaltantes(
+  codigo: string,
+  aprobados: ReadonlySet<string>,
+): string[] {
+  return (PREREQUISITOS[codigo] ?? []).filter(
+    (requisito) => !aprobados.has(requisito),
+  );
+}
+
+// Mapa inverso: asignatura -> asignaturas que la tienen como prerrequisito.
+const DEPENDIENTES: Record<string, string[]> = {};
+
+for (const [codigo, requisitos] of Object.entries(PREREQUISITOS)) {
+  for (const requisito of requisitos) {
+    (DEPENDIENTES[requisito] ??= []).push(codigo);
+  }
+}
+
+/** Asignaturas que dependen directamente de la indicada. */
+export function dependientesDe(codigo: string): string[] {
+  return DEPENDIENTES[codigo] ?? [];
+}
