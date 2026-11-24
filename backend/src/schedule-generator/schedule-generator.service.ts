@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PREREQUISITOS } from '../academic-progress/prerequisites.js';
 import { PERIODO_ACTUAL } from './periodo.js';
+import type { UpdateSchedulePreferencesDto } from '../schedule-preferences/dto/update-schedule-preferences.dto.js';
 
 import {
   buscarHorarios,
@@ -35,6 +36,7 @@ export class ScheduleGeneratorService {
   async generarParaEstudiante(
     userId: number,
     courseIds: number[],
+    preferenciasSolicitadas?: UpdateSchedulePreferencesDto,
   ) {
     // 1. Validar las asignaturas recibidas
     if (
@@ -51,14 +53,18 @@ export class ScheduleGeneratorService {
 
     const ids = [...new Set(courseIds)];
 
-    // 2. Obtener las preferencias del estudiante
+    // 2. Preferencias: las de esta petición, o si no vienen, las guardadas
     const preferenciasGuardadas =
-      await this.prisma.schedulePreference.findUnique({
-        where: { userId },
-      });
+      preferenciasSolicitadas
+        ? null
+        : await this.prisma.schedulePreference.findUnique({
+            where: { userId },
+          });
 
     const maxCursos =
-      preferenciasGuardadas?.maxCourses ?? 5;
+      preferenciasSolicitadas?.maxCourses ??
+      preferenciasGuardadas?.maxCourses ??
+      5;
 
     if (ids.length > maxCursos) {
       throw new BadRequestException(
@@ -68,11 +74,17 @@ export class ScheduleGeneratorService {
 
     const preferencias: PreferenciasHorario = {
       preferredShift:
-        preferenciasGuardadas?.preferredShift ?? 'ANY',
+        preferenciasSolicitadas?.preferredShift ??
+        preferenciasGuardadas?.preferredShift ??
+        'ANY',
       preferredFreeDay:
-        preferenciasGuardadas?.preferredFreeDay ?? null,
+        preferenciasSolicitadas
+          ? preferenciasSolicitadas.preferredFreeDay
+          : (preferenciasGuardadas?.preferredFreeDay ?? null),
       latestEndTime:
-        preferenciasGuardadas?.latestEndTime ?? '18:00',
+        preferenciasSolicitadas?.latestEndTime ??
+        preferenciasGuardadas?.latestEndTime ??
+        '18:00',
     };
 
     // 3. Comprobar que las asignaturas existan

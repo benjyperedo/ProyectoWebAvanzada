@@ -468,13 +468,6 @@ export class HorariosPage {
     this.horariosGenerados.set(null);
     this.alternativaActiva.set(0);
 
-    if (this.preferenciasSinGuardar()) {
-      this.errorGeneracion.set(
-        'Debes guardar tus preferencias antes de generar horarios.',
-      );
-      return;
-    }
-
     const ids = [...this.cursosSeleccionados()];
 
     if (ids.length === 0) {
@@ -495,6 +488,8 @@ export class HorariosPage {
 
     const versionSolicitud = this.versionHorarios;
 
+    const preferenciasEnviadas = this.preferencias();
+
     this.api.generateSchedule(ids).subscribe({
       next: (respuesta) => {
         const mismaSeleccion =
@@ -507,7 +502,7 @@ export class HorariosPage {
         if (
           versionSolicitud === this.versionHorarios &&
           mismaSeleccion &&
-          !this.preferenciasSinGuardar()
+          this.preferencias() === preferenciasEnviadas
         ) {
           this.horariosGenerados.set(respuesta);
           this.alternativaActiva.set(0);
@@ -578,8 +573,7 @@ export class HorariosPage {
   guardarHorarioElegido(): void {
     if (
       this.guardandoHorario() ||
-      this.generandoHorarios() ||
-      this.preferenciasSinGuardar()
+      this.generandoHorarios()
     ) {
       return;
     }

@@ -582,9 +582,8 @@
               expand="block"
               color="success"
               class="generate-button"
-              [disabled]="guardandoHorario() || generandoHorarios() || preferenciasSinGuardar() || estaAlternativaGuardada()"
-              (click)="guardarHorarioElegido()">
-
+              [disabled]="guardandoHorario() || generandoHorarios() || estaAlternativaGuardada()"
+              
               @if (guardandoHorario()) {
                 Guardando horario...
               } @else if (estaAlternativaGuardada()) {

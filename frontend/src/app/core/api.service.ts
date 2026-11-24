@@ -146,10 +146,11 @@ export class ApiService {
 
   generateSchedule(
     courseIds: number[],
+    preferences?: SchedulePreferences,
   ): Observable<GeneratedScheduleResponse> {
     return this.http.post<GeneratedScheduleResponse>(
       `${this.baseUrl}/schedule-generator/generate`,
-      { courseIds },
+      { courseIds, preferences },
     );
   }
 

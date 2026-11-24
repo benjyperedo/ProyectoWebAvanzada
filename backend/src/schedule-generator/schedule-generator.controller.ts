@@ -11,6 +11,7 @@ import {
 import { Auth } from '../auth/auth.decorator.js';
 import type { AuthenticatedRequest } from '../auth/auth.types.js';
 import { PERIODO_ACTUAL } from './periodo.js';
+import { GenerateScheduleDto } from './dto/generate-schedule.dto.js';
 
 import {
   ScheduleGeneratorService,
@@ -49,7 +50,7 @@ export class ScheduleGeneratorController {
   @Auth()
   generarHorarios(
     @Req() request: AuthenticatedRequest,
-    @Body() body: { courseIds: number[] },
+    @Body() body: GenerateScheduleDto,
   ) {
     const userId = this.obtenerUserId(request);
 
