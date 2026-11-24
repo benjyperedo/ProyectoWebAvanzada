@@ -177,6 +177,12 @@ export class ApiService {
     );
   }
 
+  deleteSavedSchedule(): Observable<{ deleted: boolean }> {
+    return this.http.delete<{ deleted: boolean }>(
+      `${this.baseUrl}/schedule-generator/saved`,
+    );
+  }
+
   // ==========================================
   // CALENDARIO ACADÉMICO Y PERSONAL
   // ==========================================

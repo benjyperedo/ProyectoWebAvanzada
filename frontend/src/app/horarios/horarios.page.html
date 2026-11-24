@@ -583,7 +583,7 @@
               color="success"
               class="generate-button"
               [disabled]="guardandoHorario() || generandoHorarios() || estaAlternativaGuardada()"
-              
+
               @if (guardandoHorario()) {
                 Guardando horario...
               } @else if (estaAlternativaGuardada()) {
@@ -665,6 +665,20 @@
             </p>
 
             @if (horario.period.isDemo) {
+              <ion-button
+              expand="block"
+              fill="outline"
+              color="danger"
+              [disabled]="borrandoHorario() || guardandoHorario()"
+              (click)="borrarHorarioGuardado()">
+
+              @if (borrandoHorario()) {
+                Borrando horario...
+              } @else {
+                Borrar horario guardado
+              }
+
+            </ion-button>
               <p class="horario-aviso">
                 Este horario es de demostración.
                 No equivale a una inscripción oficial

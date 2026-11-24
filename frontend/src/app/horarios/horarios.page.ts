@@ -119,6 +119,7 @@ export class HorariosPage {
   // Estados de carga y guardado.
   readonly cargandoHorarioGuardado = signal(false);
   readonly guardandoHorario = signal(false);
+  readonly borrandoHorario = signal(false);
 
   // Mensajes del guardado.
   readonly mensajeHorarioGuardado = signal('');
@@ -562,6 +563,40 @@ export class HorariosPage {
       error: (err: unknown) => {
         this.errorHorarioGuardado.set(describeError(err));
         this.cargandoHorarioGuardado.set(false);
+      },
+    });
+  }
+
+  // ==========================================
+  // BORRAR EL HORARIO GUARDADO
+  // ==========================================
+
+  borrarHorarioGuardado(): void {
+    if (
+      this.borrandoHorario() ||
+      this.guardandoHorario() ||
+      !this.horarioGuardado()
+    ) {
+      return;
+    }
+
+    if (!confirm('¿Seguro que quieres borrar tu horario guardado?')) {
+      return;
+    }
+
+    this.borrandoHorario.set(true);
+    this.mensajeHorarioGuardado.set('');
+    this.errorHorarioGuardado.set('');
+
+    this.api.deleteSavedSchedule().subscribe({
+      next: () => {
+        this.horarioGuardado.set(null);
+        this.mensajeHorarioGuardado.set('Horario guardado eliminado.');
+        this.borrandoHorario.set(false);
+      },
+      error: (err: unknown) => {
+        this.errorHorarioGuardado.set(describeError(err));
+        this.borrandoHorario.set(false);
       },
     });
   }
