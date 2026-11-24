@@ -6,6 +6,7 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PREREQUISITOS } from '../academic-progress/prerequisites.js';
+import { PERIODO_ACTUAL } from './periodo.js';
 
 import {
   buscarHorarios,
@@ -145,14 +146,14 @@ export class ScheduleGeneratorService {
       }
     }
 
-    // 6. Buscar secciones del período de demostración
+        // 6. Buscar secciones del período vigente
     const secciones =
       await this.prisma.courseSection.findMany({
         where: {
           courseId: { in: ids },
-          year: 2027,
-          semester: 1,
-          isDemo: true,
+          year: PERIODO_ACTUAL.year,
+          semester: PERIODO_ACTUAL.semester,
+          isDemo: PERIODO_ACTUAL.isDemo,
           active: true,
         },
         include: {
@@ -209,11 +210,7 @@ export class ScheduleGeneratorService {
     );
 
     return {
-      period: {
-        year: 2027,
-        semester: 1,
-        isDemo: true,
-      },
+      period: { ...PERIODO_ACTUAL },
       selectedCourseIds: ids,
       totalRecommendations: recommendations.length,
       recommendations,

@@ -10,6 +10,7 @@ import {
 
 import { Auth } from '../auth/auth.decorator.js';
 import type { AuthenticatedRequest } from '../auth/auth.types.js';
+import { PERIODO_ACTUAL } from './periodo.js';
 
 import {
   ScheduleGeneratorService,
@@ -92,12 +93,8 @@ export class ScheduleGeneratorController {
   ) {
     const userId = this.obtenerUserId(request);
 
-    // Por ahora utilizamos el período de demostración.
-    const periodo: PeriodoHorario = {
-      year: 2027,
-      semester: 1,
-      isDemo: true,
-    };
+    // Se usa el período vigente de la aplicación.
+    const periodo: PeriodoHorario = { ...PERIODO_ACTUAL };
 
     return this.scheduleGeneratorService.obtenerGuardado(
       userId,

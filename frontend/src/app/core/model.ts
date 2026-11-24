@@ -185,10 +185,20 @@ export interface GeneratedScheduleSection {
   meetings: GeneratedScheduleMeeting[];
 }
 
+// Una línea del desglose del puntaje.
+export interface ScheduleScoreDetail {
+  key: 'freeDay' | 'shift' | 'lateEnd' | 'gaps' | 'days';
+  label: string;
+  points: number;
+}
+
 // Una combinación de secciones sin choques.
 export interface GeneratedScheduleRecommendation {
   sections: GeneratedScheduleSection[];
   score: number;
+  breakdown?: ScheduleScoreDetail[];
+  daysOnCampus?: number;
+  gapMinutes?: number;
 }
 
 // Respuesta del generador de horarios.
@@ -201,6 +211,7 @@ export interface GeneratedScheduleResponse {
   selectedCourseIds: number[];
   totalRecommendations: number;
   recommendations: GeneratedScheduleRecommendation[];
+  truncated?: boolean;
   message: string;
 }
 
