@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Req,
@@ -101,5 +102,21 @@ export class ScheduleGeneratorController {
       userId,
       periodo,
     );
+  }
+
+  // ==========================================
+  // BORRAR EL HORARIO GUARDADO
+  // ==========================================
+
+  @Delete('saved')
+  @Auth()
+  borrarHorarioGuardado(
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const userId = this.obtenerUserId(request);
+
+    return this.scheduleGeneratorService.borrarGuardado(userId, {
+      ...PERIODO_ACTUAL,
+    });
   }
 }

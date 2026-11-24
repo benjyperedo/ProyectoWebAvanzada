@@ -560,4 +560,28 @@ export class ScheduleGeneratorService {
       updatedAt: horario.updatedAt,
     };
   }
+
+    // ==========================================
+  // BORRAR HORARIO GUARDADO
+  // ==========================================
+
+  async borrarGuardado(
+    userId: number,
+    periodo: PeriodoHorario,
+  ) {
+    this.validarPeriodo(periodo);
+
+    // Solo se borra el horario del usuario autenticado.
+    // deleteMany no falla si no existe, así que repetir la acción es seguro.
+    const resultado = await this.prisma.savedSchedule.deleteMany({
+      where: {
+        userId,
+        year: periodo.year,
+        semester: periodo.semester,
+        isDemo: periodo.isDemo,
+      },
+    });
+
+    return { deleted: resultado.count > 0 };
+  }
 }
