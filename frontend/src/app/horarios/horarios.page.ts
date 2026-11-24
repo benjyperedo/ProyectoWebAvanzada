@@ -44,6 +44,13 @@ interface BloqueCalendario {
   color: number;
 }
 
+// Rango de horas que muestra el calendario de un horario.
+interface RangoCalendario {
+  inicio: number; // minuto en que empieza la grilla
+  alto: number; // alto total en píxeles
+  horas: { etiqueta: string; posicion: number }[];
+}
+
 @Component({
   selector: 'app-horarios',
   templateUrl: 'horarios.page.html',
@@ -180,16 +187,56 @@ export class HorariosPage {
     { codigo: 'FRIDAY', nombre: 'Viernes' },
   ];
 
-  private readonly minutoInicioCalendario = 8 * 60;
+  // Rango mínimo del calendario: de 08:00 a 21:00.
+  private readonly minutoInicioBase = 8 * 60;
+  private readonly minutoFinBase = 21 * 60;
   private readonly pixelesPorHora = 52;
 
-  readonly horasCalendario = Array.from(
-    { length: 14 },
-    (_, indice) => ({
-      etiqueta: `${String(indice + 8).padStart(2, '0')}:00`,
-      posicion: indice * 52,
-    }),
-  );
+  // Se guarda el último rango calculado para no rehacerlo en cada ciclo.
+  private rangoEnCache: { clave: string; rango: RangoCalendario } | null =
+    null;
+
+  // El calendario crece solo si hay clases antes de las 8 o después de las 21.
+  rangoCalendario(
+    recomendacion: GeneratedScheduleRecommendation,
+  ): RangoCalendario {
+    let inicio = this.minutoInicioBase;
+    let fin = this.minutoFinBase;
+
+    for (const seccion of recomendacion.sections) {
+      for (const bloque of seccion.meetings) {
+        inicio = Math.min(
+          inicio,
+          Math.floor(this.convertirAMinutos(bloque.startTime) / 60) * 60,
+        );
+        fin = Math.max(
+          fin,
+          Math.ceil(this.convertirAMinutos(bloque.endTime) / 60) * 60,
+        );
+      }
+    }
+
+    const clave = `${inicio}-${fin}`;
+
+    if (this.rangoEnCache?.clave === clave) {
+      return this.rangoEnCache.rango;
+    }
+
+    const cantidadHoras = (fin - inicio) / 60;
+
+    const rango: RangoCalendario = {
+      inicio,
+      alto: cantidadHoras * this.pixelesPorHora,
+      horas: Array.from({ length: cantidadHoras + 1 }, (_, indice) => ({
+        etiqueta: `${String(inicio / 60 + indice).padStart(2, '0')}:00`,
+        posicion: indice * this.pixelesPorHora,
+      })),
+    };
+
+    this.rangoEnCache = { clave, rango };
+
+    return rango;
+  }
 
   // Evita mostrar respuestas de generaciones antiguas.
   private versionHorarios = 0;
@@ -491,7 +538,7 @@ export class HorariosPage {
 
     const preferenciasEnviadas = this.preferencias();
 
-    this.api.generateSchedule(ids).subscribe({
+    this.api.generateSchedule(ids, preferenciasEnviadas).subscribe({
       next: (respuesta) => {
         const mismaSeleccion =
           ids.length === this.cursosSeleccionados().length &&
@@ -734,6 +781,7 @@ export class HorariosPage {
     recomendacion: GeneratedScheduleRecommendation,
     dia: GeneratorWeekday,
   ): BloqueCalendario[] {
+    const minutoInicio = this.rangoCalendario(recomendacion).inicio;
     const bloques: BloqueCalendario[] = [];
 
     recomendacion.sections.forEach(
@@ -753,7 +801,7 @@ export class HorariosPage {
             );
 
             const posicion =
-              ((inicio - this.minutoInicioCalendario) / 60) *
+              ((inicio - minutoInicio) / 60) *
               this.pixelesPorHora;
 
             const altura =

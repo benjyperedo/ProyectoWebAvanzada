@@ -439,6 +439,8 @@
             <!-- CALENDARIO RECOMENDADO -->
             <!-- ================================== -->
 
+            @let rango = rangoCalendario(recomendacion);
+
             <div
               class="calendario-scroll"
               role="region"
@@ -463,13 +465,12 @@
 
                 <div class="calendario-cuerpo">
 
-                  <div class="calendario-horas">
+                  <div class="calendario-horas" [style.height.px]="rango.alto">
 
                     @for (
-                      hora of horasCalendario;
+                      hora of rango.horas;
                       track hora.etiqueta
                     ) {
-
                       <span
                         class="etiqueta-hora"
                         [style.top.px]="hora.posicion">
@@ -482,7 +483,7 @@
 
                   @for (dia of diasCalendario; track dia.codigo) {
 
-                    <div class="calendario-dia">
+                    <div class="calendario-dia" [style.height.px]="rango.alto">
 
                       @for (
                         bloque of obtenerBloquesPorDia(recomendacion, dia.codigo);
@@ -583,6 +584,7 @@
               color="success"
               class="generate-button"
               [disabled]="guardandoHorario() || generandoHorarios() || estaAlternativaGuardada()"
+              (click)="guardarHorarioElegido()">
 
               @if (guardandoHorario()) {
                 Guardando horario...
@@ -723,6 +725,7 @@
             <!-- ================================== -->
 
             @if (recomendacionGuardada(); as recomendacion) {
+              @let rango = rangoCalendario(recomendacion);
 
               <div
                 class="calendario-scroll"
@@ -753,10 +756,10 @@
 
                   <div class="calendario-cuerpo">
 
-                    <div class="calendario-horas">
+                    <div class="calendario-horas" [style.height.px]="rango.alto">
 
                       @for (
-                        hora of horasCalendario;
+                        hora of rango.horas;
                         track hora.etiqueta
                       ) {
 
@@ -777,7 +780,7 @@
                       track dia.codigo
                     ) {
 
-                      <div class="calendario-dia">
+                      <div class="calendario-dia" [style.height.px]="rango.alto">
 
                         @for (
                           bloque of obtenerBloquesPorDia(recomendacion, dia.codigo);
